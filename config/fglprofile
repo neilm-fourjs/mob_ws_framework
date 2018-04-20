@@ -1,2 +1,4 @@
 dbi.default.driver = "dbmsqt"
 dbi.database.mydatabase.source = "mydatabase.db"
+
+mobdemo.ws_url = "http://generodemo.hopto.org/g/ws/r/mob_ws_demo/"

@@ -60,7 +60,7 @@ PRIVATE FUNCTION doRestRequest(l_param STRING)
   DEFINE l_resp com.HttpResponse
   DEFINE l_stat SMALLINT
 
-	LET l_url = "http://localhost:8090/ws/r/"||l_param
+	LET l_url = fgl_getResource("mobdemo.ws_url")||l_param
 
 	DISPLAY "URL:",l_url
 -- Do Rest call to find out if we have a new GDC Update
@@ -75,7 +75,7 @@ PRIVATE FUNCTION doRestRequest(l_param STRING)
     IF l_stat = 200 THEN
       CALL util.JSON.parse( l_resp.getTextResponse(), m_ret )
     ELSE
-      CALL gl_lib.gl_winMessage("WS Error",SFMT("WS chkgdc call failed!\n%1\n%1-%2",l_url,l_stat, l_resp.getStatusDescription()),"exclamation")
+      CALL gl_lib.gl_winMessage("WS Error",SFMT("WS call failed!\n%1\n%1-%2",l_url,l_stat, l_resp.getStatusDescription()),"exclamation")
     END IF
   CATCH
     LET l_stat = STATUS

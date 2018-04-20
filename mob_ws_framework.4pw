@@ -85,37 +85,16 @@
         <File filePath="src/mob_lib.4gl"/>
       </Library>
       <Library binaryName="Resources" id="159917928" label="Resources">
-        <File filePath="resources/myactions.4ad"/>
-        <File filePath="resources/mystyles.4st"/>
+        <File filePath="resources/default.4ad"/>
+        <File filePath="resources/default.4st"/>
       </Library>
-      <Application binaryName="Test" dependencies="400358049" id="3807048" label="Test" targetDirectory="$(ProjectDir)/testbin"/>
     </Group>
     <Group label="Packages" language="Genero">
-      <Package binaryName="MyApp_Android" dependencies="400358049,781919164,159917928,212784684,715422167,362164715,313644474" description="Android Package" label="MyApp_Android" platform="Android">
-        <DynamicProperty name="packageId" value="com.company.myapp"/>
-        <DynamicProperty name="packageLabel" value="MyApp"/>
-        <Directory description="Binaries" excludedFiles="Test.42r" includedFiles="*.42?" label="Binaries" recursive="false" sourceDirectory="$(ProjectDir)/bin"/>
-        <Directory description="Configuration Files" includedFiles="fglprofile" label="Config" recursive="false" sourceDirectory="$(ProjectDir)/config"/>
-        <Directory description="Database" includedFiles="*.db" label="Database" recursive="false" sourceDirectory="$(ProjectDir)/database"/>
-        <Directory description="Images" includedFiles="*.png,*.jpg,*.ttf,image2font.txt" label="Images" sourceDirectory="$(ProjectDir)/images"/>
-        <Directory description="Studio Library" includedFiles="*.42?" label="libgst" recursive="false" sourceDirectory="$(GSTLIBRARYDIR)/bin"/>
-        <Directory description="Resources" includedFiles="*.4ad,*.4st,*.4tm,*.4tb,*.4sm,*.42s,*.iem" label="Resources" recursive="false" sourceDirectory="$(ProjectDir)/resources"/>
-        <Directory description="Web Components" destinationDirectory="$(RootDir)/webcomponents" label="Webcomponents" sourceDirectory="$(ProjectDir)/webcomponents"/>
-      </Package>
-      <Package binaryName="MyApp_iOS" dependencies="400358049,781919164,159917928,212784684,715422167,362164715,313644474" description="iOS Package" label="MyApp_iOS" platform="iOS">
-        <DynamicProperty name="packageId" value="com.company.myapp"/>
-        <DynamicProperty name="packageLabel" value="MyApp"/>
-        <Directory description="Binaries" excludedFiles="Test.42r" includedFiles="*.42?" label="Binaries" recursive="false" sourceDirectory="$(ProjectDir)/bin"/>
-        <Directory description="Configuration Files" includedFiles="fglprofile" label="Config" recursive="false" sourceDirectory="$(ProjectDir)/config"/>
-        <Directory description="Database" includedFiles="*.db" label="Database" recursive="false" sourceDirectory="$(ProjectDir)/database"/>
-        <Directory description="Images" includedFiles="*.png,*.jpg,*.ttf,image2font.txt" label="Images" sourceDirectory="$(ProjectDir)/images"/>
-        <Directory description="Studio Library" includedFiles="*.42?" label="libgst" recursive="false" sourceDirectory="$(GSTLIBRARYDIR)/bin"/>
-        <Directory description="Resources" includedFiles="*.4ad,*.4st,*.4tm,*.4tb,*.4sm,*.42s,*.iem" label="Resources" recursive="false" sourceDirectory="$(ProjectDir)/resources"/>
-        <Directory description="Web Components" destinationDirectory="$(RootDir)/webcomponents" label="Webcomponents" sourceDirectory="$(ProjectDir)/webcomponents"/>
-      </Package>
-      <Package binaryName="MyApp_iOS_Simulator" dependencies="400358049,781919164,159917928,212784684,715422167,362164715,313644474" description="iOS Simulator Package" label="MyApp_iOS_Simulator" platform="iOS Simulator">
-        <DynamicProperty name="packageId" value="com.company.myapp"/>
-        <DynamicProperty name="packageLabel" value="MyApp"/>
+      <Package binaryName="mob_demo12" dependencies="400358049,781919164,159917928,212784684,715422167,362164715,313644474,-994061721,455109296" description="Android Package" distDirectory="$(ProjectDir)/distbin12" label="mob_demo12" platform="Android">
+        <DynamicProperty name="packageId" value="com.fourjs.njmmobdemo12"/>
+        <DynamicProperty name="packageLabel" value="MobDemo"/>
+        <DynamicProperty name="packageVersion" value="100012"/>
+        <DynamicProperty name="packageVersionName" value="1000.12"/>
         <Directory description="Binaries" excludedFiles="Test.42r" includedFiles="*.42?" label="Binaries" recursive="false" sourceDirectory="$(ProjectDir)/bin"/>
         <Directory description="Configuration Files" includedFiles="fglprofile" label="Config" recursive="false" sourceDirectory="$(ProjectDir)/config"/>
         <Directory description="Database" includedFiles="*.db" label="Database" recursive="false" sourceDirectory="$(ProjectDir)/database"/>
