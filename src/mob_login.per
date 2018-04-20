@@ -1,0 +1,13 @@
+LAYOUT (TEXT="Login")
+GRID
+{
+[lb_login             ]
+[f001                 ]
+[f002                 ]
+}
+END -- GRID
+
+ATTRIBUTES
+LABEL lb_login : lb_login,TEXT=%"Login:";
+f001 = FORMONLY.l_user, PLACEHOLDER=%"Username", NOT NULL,REQUIRED;
+f002 = FORMONLY.l_pass, PLACEHOLDER=%"Password", INVISIBLE, NOT NULL,REQUIRED;
