@@ -28,6 +28,7 @@ MAIN
 
 	OPEN FORM main FROM "demo_main"
 	DISPLAY FORM main
+	DISPLAY IIF( mob_lib.check_network(), "Connected","No Connection") TO f_network
 
 	MENU
 		ON ACTION list_custs
@@ -36,6 +37,8 @@ MAIN
 			CALL ui.interface.frontCall("Android","showAbout",[],[])
 		ON ACTION quit
 			EXIT MENU
+		ON TIMER 10
+			DISPLAY IIF( mob_lib.check_network(), "Connected","No Connection") TO f_network
 	END MENU
 
 END MAIN
@@ -53,7 +56,7 @@ FUNCTION list_custs()
 		LET m_src_custs[x].line1 = m_custs[x].acc," ",m_custs[x].cust_name
 		LET m_src_custs[x].line2 = m_custs[x].add1
 	END FOR
-	DISPLAY ARRAY m_src_custs TO scr_arr.* ATTRIBUTES(ACCEPT=FALSE)
+	DISPLAY ARRAY m_src_custs TO scr_arr.* ATTRIBUTES(ACCEPT=FALSE,CANCEL=FALSE)
 		ON ACTION select
 			CALL show_cust( arr_curr() )
 		ON ACTION back EXIT DISPLAY

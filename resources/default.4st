@@ -9,6 +9,9 @@
   <Style name=".red">
      <StyleAttribute name="textColor" value="darkred" />
   </Style>
+  <Style name=".big">
+     <StyleAttribute name="fontSize" value="1.2em" />
+  </Style>
   <Style name="Window">
      <StyleAttribute name="windowType" value="normal" />
   </Style>

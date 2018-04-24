@@ -4,15 +4,20 @@ GRID
 [""]
 [titl                     ]
 [""]
-Options:
 [bt1                      ]
 [bt2                      ]
 [bt3                      ]
+[""]
+[lb2:nt                   ]
 }
 END -- GRID
 
 ATTRIBUTES
-LABEL titl : titl, TEXT="Simple Demo",STYLE="center";
+LABEL titl : titl, TEXT=%"A Simple Demo", JUSTIFY=CENTER,STYLE="blue big";
+
 BUTTON bt1 : list_custs, TEXT=%"View Customers", IMAGE="user";
 BUTTON bt2 : about, TEXT=%"About", IMAGE="help";
 BUTTON bt3 : quit, TEXT=%"Logout", IMAGE="quit";
+
+LABEL lb2 : lb2, TEXT=%"Network:";
+nt = FORMONLY.f_network;

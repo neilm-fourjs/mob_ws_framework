@@ -7,6 +7,7 @@ IMPORT FGL lib_secure
 CONSTANT DB_VER = 2
 
 PRIVATE DEFINE m_security_token STRING
+PUBLIC DEFINE m_connected BOOLEAN
 PUBLIC DEFINE m_ret RECORD
 		stat SMALLINT,
 		type STRING,
@@ -93,7 +94,9 @@ FUNCTION login() RETURNS BOOLEAN
 
 	OPEN FORM mob_login FROM "mob_login"
 	DISPLAY FORM mob_login
-	
+	DISPLAY "Welcome to a simple GeneroMobile demo" TO welcome
+	DISPLAY IIF( check_network(), "Connected","No Connection") TO f_network
+
 	INPUT BY NAME l_user, l_pass
 
 	IF int_flag THEN RETURN FALSE END IF
@@ -115,6 +118,16 @@ FUNCTION login() RETURNS BOOLEAN
 	DISPLAY "Security Token is:", m_security_token
 
 	RETURN TRUE
+END FUNCTION
+--------------------------------------------------------------------------------
+FUNCTION check_network() RETURNS BOOLEAN
+	DEFINE l_network STRING
+	LET m_connected = FALSE
+	CALL ui.Interface.frontCall("mobile", "connectivity", [], [l_network] )
+	IF l_network = "WIFI" OR l_network = "MobileNetwork" THEN
+		LET m_connected = TRUE
+	END IF
+	RETURN m_connected
 END FUNCTION
 --------------------------------------------------------------------------------
 FUNCTION set_security_token( l_user STRING, l_pass STRING )
