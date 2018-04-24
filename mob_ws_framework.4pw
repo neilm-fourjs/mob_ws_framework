@@ -79,7 +79,7 @@
         <VirtualFolder label="forms">
           <File filePath="src/cust_dets.per"/>
           <File filePath="src/cust_list.per"/>
-          <File filePath="../../../../../fourjs/all/my_github/mob_ws_framework/src/demo_main.per"/>
+          <File filePath="src/demo_main.per"/>
           <File filePath="src/mob_login.per"/>
         </VirtualFolder>
         <File filePath="src/mob_demo.4gl"/>
