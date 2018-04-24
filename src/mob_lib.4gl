@@ -102,6 +102,10 @@ FUNCTION set_security_token( l_user STRING, l_pass STRING )
 
 -- call the restful service to get the security token
 	CALL doRestRequest( SFMT("getToken?xml=%1",l_xml_creds))
+	IF m_ret.stat != 200 THEN
+		CALL gl_lib.gl_winMessage("Error", m_ret.reply,"exclamation")
+		RETURN FALSE
+	END IF
 
 	LET m_security_token = m_ret.reply
 	IF m_security_token IS NOT NULL THEN RETURN TRUE END IF
