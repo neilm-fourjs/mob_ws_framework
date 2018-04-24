@@ -4,6 +4,7 @@
 
 IMPORT com
 IMPORT util
+IMPORT security
 IMPORT FGL gl_lib_restful
 IMPORT FGL lib_secure
 
@@ -59,7 +60,8 @@ MAIN
 		  END CASE
 			-- send back the response.
 			CALL l_req.setResponseHeader("Content-Type","application/json")
-			CALL l_req.sendTextResponse(200, %"OK", l_str)
+			DISPLAY "Replying:",l_str
+			CALL l_req.sendTextResponse(200, "Ok!", l_str)
 		  IF int_flag != 0 THEN LET int_flag=0 EXIT WHILE END IF
 		CATCH
 			LET l_ret = STATUS
@@ -90,14 +92,15 @@ FUNCTION getToken()
 		RETURN
 	END IF
 
-	DISPLAY "Got:",l_xml
+--	DISPLAY "Got:",l_xml
 
 	CALL lib_secure.glsec_decryptCreds( l_xml ) RETURNING l_user, l_pass
-	DISPLAY "User:",l_user," Pass:",l_pass
+--	DISPLAY "User:",l_user," Pass:",l_pass
 
 	LET m_ret.stat = 200
 	LET m_ret.type = "OK"
-	LET m_ret.reply = "dummyToken"
+	LET m_ret.reply = security.RandomGenerator.CreateUUIDString()
+
 END FUNCTION
 --------------------------------------------------------------------------------
 FUNCTION setReply(l_stat SMALLINT, l_typ STRING, l_msg STRING)

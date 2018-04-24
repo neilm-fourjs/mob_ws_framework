@@ -75,7 +75,7 @@
         <File filePath="src/gl_lib_aui.4gl"/>
         <File filePath="src/lib_secure.4gl"/>
       </Library>
-      <Application binaryName="mob_demo" dependencies="159917928,212784684,362164715,455109296" environment="dirlist:FGLIMAGEPATH=$(ProjectDir)/images;$(FGLDIR)/lib/image2font.txt;$(ProjectDir)/webcomponents;$(FGLIMAGEPATH)" id="400358049" label="mob_demo">
+      <Application binaryName="mob_demo" dependencies="159917928,212784684,362164715,455109296,-994061721" environment="dirlist:FGLIMAGEPATH=$(ProjectDir)/images;$(FGLDIR)/lib/image2font.txt;$(ProjectDir)/webcomponents;$(FGLIMAGEPATH)" id="400358049" label="mob_demo">
         <VirtualFolder label="forms">
           <File filePath="src/mob_login.per"/>
         </VirtualFolder>

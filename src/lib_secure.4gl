@@ -440,7 +440,7 @@ FUNCTION glsec_decryptCreds(l_xml STRING) RETURNS (STRING,STRING)
 		EXIT PROGRAM 213
 	END TRY
 
-	DISPLAY "XML:",l_doc.saveToString()
+--	DISPLAY "XML:",l_doc.saveToString()
 	LET l_list = l_doc.selectByXPath("//User",NULL)
 	IF l_list.getCount() < 1 THEN 
 		DISPLAY "Failed to find: User"
@@ -458,7 +458,7 @@ FUNCTION glsec_decryptCreds(l_xml STRING) RETURNS (STRING,STRING)
 		LET l_pass_node = l_pass_node.getFirstChild()
 		LET l_pass = l_pass_node.getNodeValue()
 	END IF
-	DISPLAY "Returning, User:",l_user, " Pass:", l_pass
+--	DISPLAY "Returning, User:",l_user, " Pass:", l_pass
 
 	RETURN l_user, l_pass
 END FUNCTION
