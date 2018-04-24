@@ -1,5 +1,11 @@
 dbi.default.driver = "dbmsqt"
 dbi.database.mydatabase.source = "mydatabase.db"
 
+# Raspberry Pi
 #mobdemo.ws_url = "http://generodemo.hopto.org/g/ws/r/mob_ws_demo/"
-mobdemo.ws_url = "http://localhost:8090/"
+
+#
+mobdemo.ws_url = "http://uk3.generocloud.net/g/ws/r/mob_ws_demo/"
+
+# Local test
+#mobdemo.ws_url = "http://localhost:8090/"
