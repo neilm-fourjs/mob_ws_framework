@@ -88,7 +88,7 @@ FUNCTION getToken()
 		CALL setReply(201,%"ERR",%"Missing parameter 'xml'!")
 		RETURN
 	END IF
-	LET l_xml = gl_lib_restful.gl_getParameterValue(1)
+	LET l_xml = gl_lib_restful.gl_getParameterValue(x)
 	IF l_xml.getLength() < 10 THEN
 		CALL setReply(203,%"ERR",SFMT(%"XML looks invalid '%1'!",l_xml))
 		RETURN

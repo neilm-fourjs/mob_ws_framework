@@ -39,6 +39,7 @@ END MAIN
 --------------------------------------------------------------------------------
 FUNCTION list_custs()
 	DEFINE x SMALLINT
+
 	IF m_custs.getLength() = 0 THEN
 		CALL get_custs()
 	END IF
@@ -70,9 +71,38 @@ FUNCTION show_cust(l_cust SMALLINT)
 END FUNCTION
 --------------------------------------------------------------------------------
 FUNCTION get_custs()
-	DEFINE l_param STRING
-	LET l_param = "getCusts"
-	CALL mob_lib.doRestRequest(l_param)
-	DISPLAY mob_lib.m_ret.reply
-	CALL util.JSON.parse(mob_lib.m_ret.reply, m_custs )
+	DEFINE x SMALLINT
+	DEFINE l_json STRING
+	DEFINE l_updated_date DATETIME YEAR TO SECOND
+	DEFINE l_now DATETIME YEAR TO SECOND
+
+	LET l_now = CURRENT
+	SELECT updated_date INTO l_updated_date FROM table_updated WHERE table_name = "customers"
+	IF l_updated_date IS NOT NULL
+	AND l_updated_date > ( l_now - 1 UNITS DAY ) THEN
+		DECLARE cust_cur CURSOR FOR SELECT * FROM customers
+		FOREACH cust_cur INTO m_custs[ m_custs.getLength() + 1].*
+		END FOREACH
+		CALL m_custs.deleteElement( m_custs.getLength() )
+		MESSAGE m_custs.getLength()," from local db"
+		DISPLAY m_custs.getLength()," from local db"
+		RETURN
+	END IF
+
+	LET l_json = ws_get_custs()
+	IF l_json IS NOT NULL THEN
+		CALL util.JSON.parse(l_json, m_custs )
+	ELSE
+		ERROR "Failed to get Customers"
+		RETURN
+	END IF
+
+	FOR x = 1 TO m_custs.getLength()
+		INSERT INTO customers VALUES( m_custs[x].* )
+	END FOR
+
+	DELETE FROM table_updated WHERE table_name = "customers"
+	INSERT INTO table_updated VALUES("customers",l_now )
+	MESSAGE m_custs.getLength()," from server"
+	DISPLAY m_custs.getLength()," from server"
 END FUNCTION

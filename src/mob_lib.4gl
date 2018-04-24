@@ -4,7 +4,7 @@ IMPORT util
 IMPORT FGL gl_lib
 IMPORT FGL lib_secure
 
-CONSTANT DB_VER = 2
+CONSTANT DB_VER = 1
 
 PRIVATE DEFINE m_security_token STRING
 PUBLIC DEFINE m_ret RECORD
@@ -33,6 +33,7 @@ END FUNCTION
 FUNCTION init_db() RETURNS BOOLEAN
 	DEFINE l_init_db BOOLEAN
 	DEFINE l_ver SMALLINT
+
 	TRY
 		SELECT version INTO l_ver FROM db_version
 	CATCH
@@ -40,24 +41,46 @@ FUNCTION init_db() RETURNS BOOLEAN
 		CREATE TABLE db_version (
 			version SMALLINT
 		)
-		INSERT INTO db_version VALUES(DB_VER)
 		LET l_ver = DB_VER
 	END TRY
 	IF l_ver = DB_VER THEN
+		DISPLAY "DB Ver ",l_ver," Okay"
 		RETURN TRUE
 	END IF
 
+	DISPLAY "Initializing DB ..."
+	DELETE FROM db_version
+	INSERT INTO db_version VALUES(DB_VER)
 	TRY
 		DROP TABLE users
 	CATCH
 	END TRY
-
 	CREATE TABLE users (
 		username CHAR(30),
 		pass_hash CHAR(60),
 		salt CHAR(60),
 		token CHAR(60),
 		token_date DATETIME YEAR TO SECOND
+	)
+
+	TRY
+		DROP TABLE customers
+	CATCH
+	END TRY
+	CREATE TABLE customers (
+		acc CHAR(10),
+		cust_name CHAR(30),
+		add1 CHAR(30),
+		add2 CHAR(30)
+	)
+
+	TRY
+		DROP TABLE table_updated
+	CATCH
+	END TRY
+	CREATE TABLE table_updated (
+		table_name CHAR(20),
+		updated_date DATETIME YEAR TO SECOND
 	)
 
 	RETURN TRUE
@@ -101,9 +124,7 @@ FUNCTION set_security_token( l_user STRING, l_pass STRING )
 	IF l_xml_creds IS NULL THEN RETURN FALSE END IF
 
 -- call the restful service to get the security token
-	CALL doRestRequest( SFMT("getToken?xml=%1",l_xml_creds))
-	IF m_ret.stat != 200 THEN
-		CALL gl_lib.gl_winMessage("Error", m_ret.reply,"exclamation")
+	IF NOT doRestRequest( SFMT("getToken?xml=%1",l_xml_creds)) THEN
 		RETURN FALSE
 	END IF
 
@@ -112,19 +133,25 @@ FUNCTION set_security_token( l_user STRING, l_pass STRING )
 	RETURN FALSE
 END FUNCTION
 --------------------------------------------------------------------------------
-
+FUNCTION ws_get_custs() RETURNS STRING
+	IF NOT doRestRequest(SFMT("getCusts?token=%1",m_security_token)) THEN
+		RETURN NULL
+	END IF
+	DISPLAY m_ret.reply
+	RETURN m_ret.reply
+END FUNCTION
 
 --------------------------------------------------------------------------------
 -- Do the web service REST call to check for a new GDC
-FUNCTION doRestRequest(l_param STRING)
+PRIVATE FUNCTION doRestRequest(l_param STRING) RETURNS BOOLEAN
 	DEFINE l_url STRING
   DEFINE l_req com.HttpRequest
   DEFINE l_resp com.HttpResponse
   DEFINE l_stat SMALLINT
 
 	LET l_url = fgl_getResource("mobdemo.ws_url")||l_param
-
-	DISPLAY "URL:",l_url
+	CALL gl_lib.gl_logIt("doRestRequest URL:"||NVL(l_url,"NULL"))
+--	DISPLAY "URL:",l_url
 -- Do Rest call to find out if we have a new GDC Update
   TRY
     LET l_req = com.HttpRequest.Create(l_url)
@@ -144,4 +171,9 @@ FUNCTION doRestRequest(l_param STRING)
     LET m_ret.reply = ERR_GET( l_stat )
   END TRY
 	CALL gl_lib.gl_logIt("m_ret reply:"||NVL(m_ret.reply,"NULL"))
+	IF m_ret.stat != 200 THEN
+		CALL gl_lib.gl_winMessage("Error", m_ret.reply,"exclamation")
+		RETURN FALSE
+	END IF
+	RETURN TRUE
 END FUNCTION
