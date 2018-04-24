@@ -1,18 +1,18 @@
 
--- GDCUPDATEURL is the url for the Genero App server to fetch the zip file
--- if the server is not the same machine.
+-- Mobile Web Server Demo
 
 IMPORT com
 IMPORT util
-IMPORT security
 IMPORT FGL gl_lib_restful
 IMPORT FGL lib_secure
+IMPORT FGL mob_ws_db
 
 DEFINE m_ret RECORD
 		stat SMALLINT,
 		type STRING,
   	reply STRING
 	END RECORD
+DEFINE m_user STRING
 
 MAIN
   DEFINE l_ret INTEGER
@@ -20,6 +20,8 @@ MAIN
 	DEFINE l_str STRING
 	DEFINE l_quit BOOLEAN
   DEFER INTERRUPT
+
+	CALL mob_ws_db.db_connect()
 
   DISPLAY "Starting server..."
   #
@@ -80,9 +82,16 @@ MAIN
 	DISPLAY "Service Exited."
 END MAIN
 --------------------------------------------------------------------------------
+FUNCTION setReply(l_stat SMALLINT, l_typ STRING, l_msg STRING)
+	LET m_ret.stat = l_stat
+	LET m_ret.type = l_typ
+	LET m_ret.reply = l_msg
+END FUNCTION
+--------------------------------------------------------------------------------
 FUNCTION getToken()
 	DEFINE x SMALLINT
 	DEFINE l_xml, l_user, l_pass STRING
+
 	LET x = gl_lib_restful.gl_getParameterIndex("xml") 
 	IF x = 0 THEN
 		CALL setReply(201,%"ERR",%"Missing parameter 'xml'!")
@@ -94,21 +103,35 @@ FUNCTION getToken()
 		RETURN
 	END IF
 
---	DISPLAY "Got:",l_xml
-
 	CALL lib_secure.glsec_decryptCreds( l_xml ) RETURNING l_user, l_pass
---	DISPLAY "User:",l_user," Pass:",l_pass
+
+	LET m_ret.reply = db_check_user( l_user, l_pass )
+	IF m_ret.reply IS NULL THEN
+		CALL setReply(202,%"ERR",%"Login Invalid!")
+		RETURN
+	END IF
 
 	LET m_ret.stat = 200
 	LET m_ret.type = "OK"
-	LET m_ret.reply = security.RandomGenerator.CreateUUIDString()
-
 END FUNCTION
 --------------------------------------------------------------------------------
-FUNCTION setReply(l_stat SMALLINT, l_typ STRING, l_msg STRING)
-	LET m_ret.stat = l_stat
-	LET m_ret.type = l_typ
-	LET m_ret.reply = l_msg
+FUNCTION check_token() RETURNS BOOLEAN
+	DEFINE x SMALLINT
+	DEFINE l_token, l_res STRING
+
+	LET x = gl_lib_restful.gl_getParameterIndex("token") 
+	IF x = 0 THEN
+		CALL setReply(201,%"ERR",%"Missing parameter 'token'!")
+		RETURN FALSE
+	END IF
+	LET l_token = gl_lib_restful.gl_getParameterValue(x)
+	LET l_res = mob_ws_db.db_check_token( l_token )
+	IF l_res.subString(1,5) = "ERROR" THEN
+		CALL setReply(201,%"ERR",l_res)
+		RETURN FALSE
+	END IF
+	LET m_user = l_res
+	RETURN TRUE
 END FUNCTION
 --------------------------------------------------------------------------------
 FUNCTION getCusts()
@@ -119,6 +142,10 @@ DEFINE l_custs DYNAMIC ARRAY OF RECORD
 		add2 CHAR(30)
 	END RECORD
 	DEFINE x SMALLINT
+
+	IF NOT check_token() THEN RETURN END IF
+
+	DISPLAY "Return customer list for user:",m_user
 	FOR x = 1 TO 5
 		LET l_custs[x].acc = "TEST-"||x
 		CASE x
@@ -134,6 +161,7 @@ DEFINE l_custs DYNAMIC ARRAY OF RECORD
 						LET l_custs[x].add1 = "10 Bloggs rd"
 		END CASE
 	END FOR
+
 	LET m_ret.stat = 200
 	LET m_ret.type = "OK"
 	LET m_ret.reply = util.JSON.stringify(l_custs)

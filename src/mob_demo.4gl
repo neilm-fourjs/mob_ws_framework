@@ -1,4 +1,7 @@
 --SCHEMA mob_database
+
+-- A Genero Mobile demo with web service framework.
+
 IMPORT util
 
 IMPORT FGL mob_lib
@@ -50,9 +53,10 @@ FUNCTION list_custs()
 		LET m_src_custs[x].line1 = m_custs[x].acc," ",m_custs[x].cust_name
 		LET m_src_custs[x].line2 = m_custs[x].add1
 	END FOR
-	DISPLAY ARRAY m_src_custs TO scr_arr.*
+	DISPLAY ARRAY m_src_custs TO scr_arr.* ATTRIBUTES(ACCEPT=FALSE)
 		ON ACTION select
 			CALL show_cust( arr_curr() )
+		ON ACTION back EXIT DISPLAY
 	END DISPLAY
 
 	CLOSE WINDOW custs
@@ -64,6 +68,7 @@ FUNCTION show_cust(l_cust SMALLINT)
 	DISPLAY BY NAME m_custs[ l_cust ].*
 
 	MENU
+		ON ACTION back EXIT MENU
 		ON ACTION close EXIT MENU
 	END MENU
 

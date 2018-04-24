@@ -61,19 +61,48 @@
   <LanguageList version="1.0"/>
   <PlatformList version="1.0"/>
   <Group environment="value:FGLAPPSERVER=8090" label="mob_project" language="Genero">
-    <Group environment="filelist:FGLPROFILE=$(ProjectDir)/config/fglprofile,dirlist:DBPATH=$(ProjectDir)/database;$(DBPATH)" label="mob_demo" language="Genero">
-      <Library binaryName="Config" id="362164715" label="Config">
-        <File filePath="config/fglprofile"/>
-      </Library>
-      <Library binaryName="Database" id="455109296" label="Database">
-        <File filePath="database/mob_database.4db"/>
-        <File filePath="database/mob_database.db"/>
-      </Library>
+    <Group label="_Packages" language="Genero">
+      <Package binaryName="mob_demo12" dependencies="400358049,781919164,159917928,212784684,715422167,362164715,313644474,-994061721,455109296" description="Android Package" distDirectory="$(ProjectDir)/distbin12" label="mob_demo12" platform="Android">
+        <DynamicProperty name="packageId" value="com.fourjs.njmmobdemo12"/>
+        <DynamicProperty name="packageLabel" value="MobDemo"/>
+        <DynamicProperty name="packageVersion" value="100012"/>
+        <DynamicProperty name="packageVersionName" value="1000.12"/>
+        <Directory description="Binaries" excludedFiles="Test.42r" includedFiles="*.42?" label="Binaries" recursive="false" sourceDirectory="$(ProjectDir)/bin"/>
+        <Directory description="Binaries" excludedFiles="Test.42r" includedFiles="*.42?" label="Binaries_common" recursive="false" sourceDirectory="$(ProjectDir)/bin_common"/>
+        <Directory description="Configuration Files" includedFiles="fglprofile" label="Config" recursive="false" sourceDirectory="$(ProjectDir)/config"/>
+        <Directory description="Database" includedFiles="*.db" label="Database" recursive="false" sourceDirectory="$(ProjectDir)/database"/>
+        <Directory description="Images" includedFiles="*.png,*.jpg,*.ttf,image2font.txt" label="Images" sourceDirectory="$(ProjectDir)/images"/>
+        <Directory description="Studio Library" includedFiles="*.42?" label="libgst" recursive="false" sourceDirectory="$(GSTLIBRARYDIR)/bin"/>
+        <Directory description="Resources" includedFiles="*.4ad,*.4st,*.4tm,*.4tb,*.4sm,*.42s,*.iem" label="Resources" recursive="false" sourceDirectory="$(ProjectDir)/resources"/>
+        <Directory description="Web Components" destinationDirectory="$(RootDir)/webcomponents" label="Webcomponents" sourceDirectory="$(ProjectDir)/webcomponents"/>
+      </Package>
+      <Package binaryName="mob_ws_demo" dependencies="991859968,-1451902566" label="mob_ws_demo" platform="Genero Application Server">
+        <DynamicProperty name="packageId" value="mob_ws_demo"/>
+        <DynamicProperty name="packageLabel" value="mob_ws_demo"/>
+        <DynamicProperty name="packageVersion" value="1000"/>
+        <DynamicProperty name="packageVersionName" value="10000"/>
+        <Directory label="Binaries" sourceDirectory="$(ProjectDir)/bin_server"/>
+        <Directory label="Binaries_common" sourceDirectory="$(ProjectDir)/bin_common"/>
+        <Directory label="Gas" sourceDirectory="$(ProjectDir)/gas"/>
+      </Package>
+    </Group>
+    <Group label="Common" targetDirectory="$(ProjectDir)/bin_common">
       <Library binaryName="gl_lib" id="-994061721" label="gl_lib">
         <File filePath="src/genero_lib.inc"/>
         <File filePath="src/gl_lib.4gl"/>
         <File filePath="src/gl_lib_aui.4gl"/>
         <File filePath="src/lib_secure.4gl"/>
+      </Library>
+    </Group>
+    <Group environment="filelist:FGLPROFILE=$(ProjectDir)/config/fglprofile,dirlist:DBPATH=$(ProjectDir)/database;$(DBPATH)" label="mob_demo" language="Genero">
+      <Library binaryName="Config" id="362164715" label="Config">
+        <File filePath="resources/default.4ad"/>
+        <File filePath="resources/default.4st"/>
+        <File filePath="config/fglprofile"/>
+      </Library>
+      <Library binaryName="Database" id="455109296" label="Database">
+        <File filePath="database/mob_database.4db"/>
+        <File filePath="database/mob_database.db"/>
       </Library>
       <Application binaryName="mob_demo" dependencies="159917928,212784684,362164715,455109296,-994061721" environment="dirlist:FGLIMAGEPATH=$(ProjectDir)/images;$(FGLDIR)/lib/image2font.txt;$(ProjectDir)/webcomponents;$(FGLIMAGEPATH)" id="400358049" label="mob_demo">
         <VirtualFolder label="forms">
@@ -83,38 +112,8 @@
           <File filePath="src/mob_login.per"/>
         </VirtualFolder>
         <File filePath="src/mob_demo.4gl"/>
-      </Application>
-      <Library binaryName="mob_lib" dependencies="-994061721" id="212784684" label="mob_lib">
         <File filePath="src/mob_lib.4gl"/>
-      </Library>
-      <Library binaryName="Resources" id="159917928" label="Resources">
-        <File filePath="resources/default.4ad"/>
-        <File filePath="resources/default.4st"/>
-      </Library>
-    </Group>
-    <Group label="Packages" language="Genero">
-      <Package binaryName="mob_demo12" dependencies="400358049,781919164,159917928,212784684,715422167,362164715,313644474,-994061721,455109296" description="Android Package" distDirectory="$(ProjectDir)/distbin12" label="mob_demo12" platform="Android">
-        <DynamicProperty name="packageId" value="com.fourjs.njmmobdemo12"/>
-        <DynamicProperty name="packageLabel" value="MobDemo"/>
-        <DynamicProperty name="packageVersion" value="100012"/>
-        <DynamicProperty name="packageVersionName" value="1000.12"/>
-        <Directory description="Binaries" excludedFiles="Test.42r" includedFiles="*.42?" label="Binaries" recursive="false" sourceDirectory="$(ProjectDir)/bin"/>
-        <Directory description="Configuration Files" includedFiles="fglprofile" label="Config" recursive="false" sourceDirectory="$(ProjectDir)/config"/>
-        <Directory description="Database" includedFiles="*.db" label="Database" recursive="false" sourceDirectory="$(ProjectDir)/database"/>
-        <Directory description="Images" includedFiles="*.png,*.jpg,*.ttf,image2font.txt" label="Images" sourceDirectory="$(ProjectDir)/images"/>
-        <Directory description="Studio Library" includedFiles="*.42?" label="libgst" recursive="false" sourceDirectory="$(GSTLIBRARYDIR)/bin"/>
-        <Directory description="Resources" includedFiles="*.4ad,*.4st,*.4tm,*.4tb,*.4sm,*.42s,*.iem" label="Resources" recursive="false" sourceDirectory="$(ProjectDir)/resources"/>
-        <Directory description="Web Components" destinationDirectory="$(RootDir)/webcomponents" label="Webcomponents" sourceDirectory="$(ProjectDir)/webcomponents"/>
-      </Package>
-      <Package binaryName="mob_ws_demo" label="mob_ws_demo" platform="Genero Application Server">
-        <DynamicProperty name="packageId" value="mob_ws_demo"/>
-        <DynamicProperty name="packageLabel" value="mob_ws_demo"/>
-        <DynamicProperty name="packageVersion" value="1000"/>
-        <DynamicProperty name="packageVersionName" value="10000"/>
-        <Directory label="Binaries" sourceDirectory="$(ProjectDir)/bin_server"/>
-        <Directory label="Binaries_Lib" sourceDirectory="$(ProjectDir)/bin"/>
-        <Directory label="Gas" sourceDirectory="$(ProjectDir)/gas"/>
-      </Package>
+      </Application>
     </Group>
     <Group label="srv_demo" language="Genero" targetDirectory="$(ProjectDir)/bin_server">
       <Library binaryName="gas" excludeFromBuild="true" id="-1451902566" label="gas">
@@ -122,6 +121,7 @@
       </Library>
       <Application binaryName="mob_ws_demo" dependencies="-994061721" id="991859968" label="mob_ws_demo">
         <File filePath="src_server/gl_lib_restful.4gl"/>
+        <File filePath="src_server/mob_ws_db.4gl"/>
         <File filePath="src_server/mob_ws_demo.4gl"/>
       </Application>
     </Group>

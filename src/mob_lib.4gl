@@ -4,7 +4,7 @@ IMPORT util
 IMPORT FGL gl_lib
 IMPORT FGL lib_secure
 
-CONSTANT DB_VER = 1
+CONSTANT DB_VER = 2
 
 PRIVATE DEFINE m_security_token STRING
 PUBLIC DEFINE m_ret RECORD
@@ -88,7 +88,7 @@ END FUNCTION
 --------------------------------------------------------------------------------
 FUNCTION login() RETURNS BOOLEAN
 	DEFINE l_user, l_pass STRING
-	DEFINE l_salt, l_passhash STRING
+	DEFINE l_salt, l_pass_hash STRING
 	DEFINE l_datetime DATETIME YEAR TO SECOND 
 
 	OPEN FORM mob_login FROM "mob_login"
@@ -98,15 +98,15 @@ FUNCTION login() RETURNS BOOLEAN
 
 	IF int_flag THEN RETURN FALSE END IF
 
-	SELECT pass_hash, salt, token  INTO l_passhash,l_salt,m_security_token FROM users WHERE username = l_user
+	SELECT pass_hash, salt, token  INTO l_pass_hash,l_salt,m_security_token FROM users WHERE username = l_user
 	IF STATUS = NOTFOUND THEN
 		IF NOT set_security_token( l_user, l_pass ) THEN RETURN FALSE END IF
 		LET l_salt = lib_secure.glsec_genSalt( NULL )
-		LET l_passhash = lib_secure.glsec_genPasswordHash(l_pass, l_salt, NULL)
+		LET l_pass_hash = lib_secure.glsec_genPasswordHash(l_pass, l_salt, NULL)
 		LET l_datetime = CURRENT
-		INSERT INTO users VALUES(l_user, l_passhash, l_salt, m_security_token, l_datetime )
+		INSERT INTO users VALUES(l_user, l_pass_hash, l_salt, m_security_token, l_datetime )
 	ELSE
-		IF NOT lib_secure.glsec_chkPassword(l_pass ,l_passhash ,l_salt, NULL ) THEN
+		IF NOT lib_secure.glsec_chkPassword(l_pass ,l_pass_hash ,l_salt, NULL ) THEN
 			CALL gl_lib.gl_winMessage("Error","Login Failed","exclamation")
 			RETURN FALSE
 		END IF
