@@ -47,6 +47,8 @@ MAIN
 					CASE
 						WHEN gl_lib_restful.m_reqInfo.path.equalsIgnoreCase("getToken") 
 							CALL getToken()
+						WHEN gl_lib_restful.m_reqInfo.path.equalsIgnoreCase("getCusts") 
+							CALL getCusts()
 						OTHERWISE
 							CALL setReply(201,%"ERR",SFMT(%"Operation '%1' not found",gl_lib_restful.m_reqInfo.path))
 					END CASE
@@ -109,3 +111,30 @@ FUNCTION setReply(l_stat SMALLINT, l_typ STRING, l_msg STRING)
 	LET m_ret.reply = l_msg
 END FUNCTION
 --------------------------------------------------------------------------------
+FUNCTION getCusts()
+DEFINE l_custs DYNAMIC ARRAY OF RECORD
+		acc CHAR(10),
+		cust_name CHAR(30),
+		add1 CHAR(30),
+		add2 CHAR(30)
+	END RECORD
+	DEFINE x SMALLINT
+	FOR x = 1 TO 5
+		LET l_custs[x].acc = "TEST-"||x
+		CASE x
+			WHEN 1 LET l_custs[x].cust_name = "Neil"
+						LET l_custs[x].add1 = "20a Somewhere rd"
+			WHEN 2 LET l_custs[x].cust_name = "Paul"
+						LET l_custs[x].add1 = "The Chapel"
+			WHEN 3 LET l_custs[x].cust_name = "John"
+						LET l_custs[x].add1 = "1 Abbey Rd"
+			WHEN 4 LET l_custs[x].cust_name = "Mike"
+						LET l_custs[x].add1 = "5 Smith Street"
+			WHEN 5 LET l_custs[x].cust_name = "Fred"
+						LET l_custs[x].add1 = "10 Bloggs rd"
+		END CASE
+	END FOR
+	LET m_ret.stat = 200
+	LET m_ret.type = "OK"
+	LET m_ret.reply = util.JSON.stringify(l_custs)
+END FUNCTION

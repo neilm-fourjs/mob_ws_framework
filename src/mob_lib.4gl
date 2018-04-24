@@ -4,10 +4,10 @@ IMPORT util
 IMPORT FGL gl_lib
 IMPORT FGL lib_secure
 
-CONSTANT DB_VER = 1
+CONSTANT DB_VER = 2
 
 PRIVATE DEFINE m_security_token STRING
-DEFINE m_ret RECORD
+PUBLIC DEFINE m_ret RECORD
 		stat SMALLINT,
 		type STRING,
   	reply STRING
@@ -108,9 +108,11 @@ FUNCTION set_security_token( l_user STRING, l_pass STRING )
 	RETURN FALSE
 END FUNCTION
 --------------------------------------------------------------------------------
+
+
 --------------------------------------------------------------------------------
 -- Do the web service REST call to check for a new GDC
-PRIVATE FUNCTION doRestRequest(l_param STRING)
+FUNCTION doRestRequest(l_param STRING)
 	DEFINE l_url STRING
   DEFINE l_req com.HttpRequest
   DEFINE l_resp com.HttpResponse

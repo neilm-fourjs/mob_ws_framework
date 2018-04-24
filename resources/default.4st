@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="ANSI_X3.4-1968"?>
 <StyleList>
+  <Style name=".bold">
+     <StyleAttribute name="fontWeight" value="bold" />
+  </Style>
+  <Style name=".blue">
+     <StyleAttribute name="textColor" value="darkblue" />
+  </Style>
+  <Style name=".red">
+     <StyleAttribute name="textColor" value="darkred" />
+  </Style>
   <Style name="Window">
      <StyleAttribute name="windowType" value="normal" />
   </Style>
