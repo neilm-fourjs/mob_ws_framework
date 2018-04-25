@@ -97,23 +97,27 @@ FUNCTION login() RETURNS BOOLEAN
 	DISPLAY "Welcome to a simple GeneroMobile demo" TO welcome
 	DISPLAY IIF( check_network(), "Connected","No Connection") TO f_network
 
-	INPUT BY NAME l_user, l_pass
+	WHILE TRUE
+		INPUT BY NAME l_user, l_pass
 
-	IF int_flag THEN RETURN FALSE END IF
+		IF int_flag THEN EXIT PROGRAM END IF
 
-	SELECT pass_hash, salt, token  INTO l_pass_hash,l_salt,m_security_token FROM users WHERE username = l_user
-	IF STATUS = NOTFOUND THEN
-		IF NOT set_security_token( l_user, l_pass ) THEN RETURN FALSE END IF
-		LET l_salt = lib_secure.glsec_genSalt( NULL )
-		LET l_pass_hash = lib_secure.glsec_genPasswordHash(l_pass, l_salt, NULL)
-		LET l_datetime = CURRENT
-		INSERT INTO users VALUES(l_user, l_pass_hash, l_salt, m_security_token, l_datetime )
-	ELSE
-		IF NOT lib_secure.glsec_chkPassword(l_pass ,l_pass_hash ,l_salt, NULL ) THEN
-			CALL gl_lib.gl_winMessage("Error","Login Failed","exclamation")
-			RETURN FALSE
+		SELECT pass_hash, salt, token  INTO l_pass_hash,l_salt,m_security_token FROM users WHERE username = l_user
+		IF STATUS = NOTFOUND THEN
+			IF NOT set_security_token( l_user, l_pass ) THEN RETURN FALSE END IF
+			LET l_salt = lib_secure.glsec_genSalt( NULL )
+			LET l_pass_hash = lib_secure.glsec_genPasswordHash(l_pass, l_salt, NULL)
+			LET l_datetime = CURRENT
+			INSERT INTO users VALUES(l_user, l_pass_hash, l_salt, m_security_token, l_datetime )
+			EXIT WHILE
+		ELSE
+			IF NOT lib_secure.glsec_chkPassword(l_pass ,l_pass_hash ,l_salt, NULL ) THEN
+				CALL gl_lib.gl_winMessage("Error","Login Failed","exclamation")
+				CONTINUE WHILE
+			END IF
 		END IF
-	END IF
+		EXIT WHILE
+	END WHILE
 
 	DISPLAY "Security Token is:", m_security_token
 

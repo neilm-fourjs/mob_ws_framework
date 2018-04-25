@@ -7,6 +7,7 @@ GRID
 [bt1                      ]
 [bt2                      ]
 [bt3                      ]
+[bt4                      ]
 [""]
 [lb2:nt                   ]
 }
@@ -15,9 +16,10 @@ END -- GRID
 ATTRIBUTES
 LABEL titl : titl, TEXT=%"A Simple Demo", JUSTIFY=CENTER,STYLE="blue big";
 
-BUTTON bt1 : list_custs, TEXT=%"View Customers", IMAGE="user";
-BUTTON bt2 : about, TEXT=%"About", IMAGE="help";
-BUTTON bt3 : quit, TEXT=%"Logout", IMAGE="quit";
+BUTTON bt1 : list_custs, TEXT=%"View Customers", IMAGE="fa-users";
+BUTTON bt2 : take_photo, TEXT=%"Take Photo", IMAGE="fa-camera";
+BUTTON bt3 : about, TEXT=%"About", IMAGE="fa-info";
+BUTTON bt4 : quit, TEXT=%"Logout", IMAGE="fa-power-off";
 
 LABEL lb2 : lb2, TEXT=%"Network:";
 nt = FORMONLY.f_network;

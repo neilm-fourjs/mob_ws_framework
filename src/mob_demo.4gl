@@ -33,6 +33,8 @@ MAIN
 	MENU
 		ON ACTION list_custs
 			CALL list_custs()
+		ON ACTION take_photo
+			CALL take_photo()
 		ON ACTION about
 			CALL ui.interface.frontCall("Android","showAbout",[],[])
 		ON ACTION quit
@@ -131,4 +133,11 @@ FUNCTION get_custs()
 	INSERT INTO table_updated VALUES("customers",l_now )
 	MESSAGE m_custs.getLength()," from server"
 	DISPLAY m_custs.getLength()," from server"
+END FUNCTION
+--------------------------------------------------------------------------------
+-- Take a Photo
+FUNCTION take_photo()
+  DEFINE l_photo_file STRING
+	CALL ui.Interface.frontCall("mobile","takePhoto",[],[l_photo_file])
+	DISPLAY l_photo_file
 END FUNCTION
