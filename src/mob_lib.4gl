@@ -248,3 +248,46 @@ PRIVATE FUNCTION doRestRequestPhoto(l_param STRING, l_photo_file STRING, l_size 
 	END IF
 	RETURN TRUE
 END FUNCTION
+
+
+--------------------------------------------------------------------------------
+-- Send some json data back to server
+--
+-- @params l_data String JSON data
+FUNCTION ws_send_data(l_data STRING)
+	DEFINE l_url STRING
+  DEFINE l_req com.HttpRequest
+  DEFINE l_resp com.HttpResponse
+  DEFINE l_stat SMALLINT
+
+	LET l_url = fgl_getResource("mobdemo.ws_url")||"sendData"
+	CALL gl_lib.gl_logIt("doRestRequest URL:"||NVL(l_url,"NULL"))
+	DISPLAY "URL:",l_url
+-- Do Rest call to find out if we have a new GDC Update
+
+  TRY
+    LET l_req = com.HttpRequest.Create(l_url)
+    CALL l_req.setMethod("POST")
+    CALL l_req.setHeader("Content-Type", "application/json")
+    CALL l_req.setHeader("Accept", "application/json")
+	--	CALL l_req.setHeader("Content-Length", l_size )
+		CALL l_req.doTextRequest(l_data)
+    LET l_resp = l_req.getResponse()
+    LET l_stat = l_resp.getStatusCode()
+    IF l_stat = 200 THEN
+      CALL util.JSON.parse( l_resp.getTextResponse(), m_ret )
+    ELSE
+      CALL gl_lib.gl_winMessage("WS Error",SFMT("WS call failed!\n%1\n%2-%3",l_url,l_stat, l_resp.getStatusDescription()),"exclamation")
+    END IF
+  CATCH
+    LET l_stat = STATUS
+    LET m_ret.reply = ERR_GET( l_stat )
+  END TRY
+	CALL gl_lib.gl_logIt("m_ret reply:"||NVL(m_ret.reply,"NULL"))
+	IF m_ret.stat != 200 THEN
+		CALL gl_lib.gl_winMessage("Error", m_ret.reply,"exclamation")
+		RETURN
+	END IF
+	RETURN 
+  
+END FUNCTION

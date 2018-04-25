@@ -111,7 +111,7 @@
       </Library>
     </Group>
     <Group environment="filelist:FGLPROFILE=$(ProjectDir)/config/fglprofile,dirlist:DBPATH=$(ProjectDir)/database;$(DBPATH)" label="mob_demo" language="Genero">
-      <Library binaryName="Config" id="362164715" label="Config">
+      <Library binaryName="Config" excludeFromBuild="true" id="362164715" label="Config">
         <File filePath="resources/default.4ad"/>
         <File filePath="resources/default.4st"/>
         <File filePath="config/fglprofile"/>

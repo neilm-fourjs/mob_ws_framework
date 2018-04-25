@@ -10,7 +10,7 @@ mobile.environment.fglimagepath = "."
 #mobdemo.ws_url = "http://uk3.generocloud.net/g/ws/r/mob_ws_demo/"
 
 # Local test
-mobdemo.ws_url = "http://localhost:8090/"
+#mobdemo.ws_url = "http://localhost:8090/"
 
 # Local GAS
-#mobdemo.ws_url = "http://localhost/g/ws/r/mob_ws_demo/"
+mobdemo.ws_url = "http://localhost/g/ws/r/mob_ws_demo/"

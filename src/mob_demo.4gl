@@ -36,6 +36,8 @@ MAIN
 			CALL list_custs()
 		ON ACTION take_photo
 			CALL take_photo()
+		ON ACTION send_data
+			CALL send_data()
 		ON ACTION about
 			CALL ui.interface.frontCall("Android","showAbout",[],[])
 		ON ACTION quit
@@ -170,3 +172,12 @@ FUNCTION take_photo()
 	END MENU
 	CLOSE WINDOW show_photo
 END FUNCTION
+--------------------------------------------------------------------------------
+FUNCTION send_data()
+	DEFINE l_data STRING
+
+	LET l_data = util.JSON.stringify(m_custs)
+
+	CALL ws_send_data(l_data)
+END FUNCTION
+

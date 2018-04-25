@@ -61,6 +61,8 @@ MAIN
 					CASE
 						WHEN gl_lib_restful.m_reqInfo.path.equalsIgnoreCase("putPhoto") 
 							CALL putPhoto(l_req)
+						WHEN gl_lib_restful.m_reqInfo.path.equalsIgnoreCase("sendData")
+							CALL sendData(l_req)
 						OTHERWISE
 							CALL setReply(201,%"ERR",SFMT(%"Operation '%1' not found",gl_lib_restful.m_reqInfo.path))
 					END CASE
@@ -187,3 +189,17 @@ FUNCTION putPhoto(l_req com.HTTPServiceRequest)
 		LET m_ret.reply = "Photo Doesn't Exist!"
 	END IF
 END FUNCTION
+--------------------------------------------------------------------------------
+-- putPhoto - handle a photo being received.
+FUNCTION sendData(l_req com.HTTPServiceRequest)
+	DEFINE l_str STRING
+
+	DISPLAY "Getting Data ..."
+
+	LET l_str = l_req.readTextRequest()
+	DISPLAY "Data:",l_str
+	LET m_ret.stat = 200
+	LET m_ret.type = "OK"
+	LET m_ret.reply = "Data received"
+END FUNCTION
+--------------------------------------------------------------------------------
