@@ -123,6 +123,12 @@ END FUNCTION
 FUNCTION check_network() RETURNS BOOLEAN
 	DEFINE l_network STRING
 	LET m_connected = FALSE
+
+	IF ui.Interface.getFrontEndName() = "GDC" THEN
+		LET m_connected = TRUE
+		RETURN m_connected
+	END IF
+
 	CALL ui.Interface.frontCall("mobile", "connectivity", [], [l_network] )
 	IF l_network = "WIFI" OR l_network = "MobileNetwork" THEN
 		LET m_connected = TRUE

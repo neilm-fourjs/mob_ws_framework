@@ -3,6 +3,7 @@
 
 IMPORT FGL lib_secure
 IMPORT security
+IMPORT util
 
 --------------------------------------------------------------------------------
 FUNCTION db_connect()
@@ -58,6 +59,35 @@ FUNCTION db_register_user( l_user CHAR(30), l_pass CHAR(30)) RETURNS STRING
 	LET l_pass_hash = lib_secure.glsec_genPasswordHash(l_pass, l_salt, NULL)
   INSERT INTO ws_users VALUES( l_user, l_pass_hash, l_salt, l_token, l_now )
 	RETURN l_token
+END FUNCTION
+--------------------------------------------------------------------------------
+-- Get Customers
+--
+FUNCTION db_get_custs() RETURNS STRING
+DEFINE l_custs DYNAMIC ARRAY OF RECORD
+		acc CHAR(10),
+		cust_name CHAR(30),
+		add1 CHAR(30),
+		add2 CHAR(30)
+	END RECORD
+	DEFINE x SMALLINT
+
+	FOR x = 1 TO 5
+		LET l_custs[x].acc = "TEST-"||x
+		CASE x
+			WHEN 1 LET l_custs[x].cust_name = "Neil"
+						LET l_custs[x].add1 = "20a Somewhere rd"
+			WHEN 2 LET l_custs[x].cust_name = "Paul"
+						LET l_custs[x].add1 = "The Chapel"
+			WHEN 3 LET l_custs[x].cust_name = "John"
+						LET l_custs[x].add1 = "1 Abbey Rd"
+			WHEN 4 LET l_custs[x].cust_name = "Mike"
+						LET l_custs[x].add1 = "5 Smith Street"
+			WHEN 5 LET l_custs[x].cust_name = "Fred"
+						LET l_custs[x].add1 = "10 Bloggs rd"
+		END CASE
+	END FOR
+	RETURN util.JSON.stringify(l_custs)
 END FUNCTION
 --------------------------------------------------------------------------------
 -- Check the Token used is registered to a user and not expired.

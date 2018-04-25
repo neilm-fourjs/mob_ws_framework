@@ -81,13 +81,30 @@ END FUNCTION
 FUNCTION get_custs()
 	DEFINE x SMALLINT
 	DEFINE l_json STRING
+	DEFINE l_user_local BOOLEAN
 	DEFINE l_updated_date DATETIME YEAR TO SECOND
 	DEFINE l_now DATETIME YEAR TO SECOND
 
+	LET l_user_local = FALSE
 	LET l_now = CURRENT
 	SELECT updated_date INTO l_updated_date FROM table_updated WHERE table_name = "customers"
 	IF l_updated_date IS NOT NULL
 	AND l_updated_date > ( l_now - 1 UNITS DAY ) THEN
+		LET l_user_local = TRUE
+	END IF
+
+	IF NOT mob_lib.m_connected THEN 
+		IF NOT l_user_local AND l_updated_date IS NOT NULL THEN
+			CALL gl_lib.gl_winMessage("Warning",SFMT("Data is from %1\nYou are not connected to a network",l_updated_date),"exclamation")
+			LET l_user_local = TRUE
+		END IF
+		IF l_updated_date IS NULL THEN
+			CALL gl_lib.gl_winMessage("Error","No local data and no connection!","exclamation")
+			RETURN
+		END IF
+	END IF
+
+	IF l_user_local THEN
 		DECLARE cust_cur CURSOR FOR SELECT * FROM customers
 		FOREACH cust_cur INTO m_custs[ m_custs.getLength() + 1].*
 		END FOREACH
@@ -105,6 +122,7 @@ FUNCTION get_custs()
 		RETURN
 	END IF
 
+	DELETE FROM customers
 	FOR x = 1 TO m_custs.getLength()
 		INSERT INTO customers VALUES( m_custs[x].* )
 	END FOR

@@ -135,34 +135,15 @@ FUNCTION check_token() RETURNS BOOLEAN
 END FUNCTION
 --------------------------------------------------------------------------------
 FUNCTION getCusts()
-DEFINE l_custs DYNAMIC ARRAY OF RECORD
-		acc CHAR(10),
-		cust_name CHAR(30),
-		add1 CHAR(30),
-		add2 CHAR(30)
-	END RECORD
-	DEFINE x SMALLINT
+	DEFINE l_data STRING
 
 	IF NOT check_token() THEN RETURN END IF
 
 	DISPLAY "Return customer list for user:",m_user
-	FOR x = 1 TO 5
-		LET l_custs[x].acc = "TEST-"||x
-		CASE x
-			WHEN 1 LET l_custs[x].cust_name = "Neil"
-						LET l_custs[x].add1 = "20a Somewhere rd"
-			WHEN 2 LET l_custs[x].cust_name = "Paul"
-						LET l_custs[x].add1 = "The Chapel"
-			WHEN 3 LET l_custs[x].cust_name = "John"
-						LET l_custs[x].add1 = "1 Abbey Rd"
-			WHEN 4 LET l_custs[x].cust_name = "Mike"
-						LET l_custs[x].add1 = "5 Smith Street"
-			WHEN 5 LET l_custs[x].cust_name = "Fred"
-						LET l_custs[x].add1 = "10 Bloggs rd"
-		END CASE
-	END FOR
+
+	LET l_data = db_get_custs()
 
 	LET m_ret.stat = 200
 	LET m_ret.type = "OK"
-	LET m_ret.reply = util.JSON.stringify(l_custs)
+	LET m_ret.reply = l_data
 END FUNCTION
