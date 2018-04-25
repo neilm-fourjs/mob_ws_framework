@@ -200,3 +200,49 @@ PRIVATE FUNCTION doRestRequest(l_param STRING) RETURNS BOOLEAN
 	END IF
 	RETURN TRUE
 END FUNCTION
+
+
+--------------------------------------------------------------------------------
+FUNCTION ws_post_file(l_photo_file STRING) RETURNS STRING
+	IF NOT doRestRequestPhoto(SFMT("putPhoto?token=%1",m_security_token),l_photo_file) THEN
+	END IF
+	DISPLAY m_ret.reply
+	RETURN m_ret.reply
+END FUNCTION
+--------------------------------------------------------------------------------
+-- Do the web service REST call to check for a new GDC
+PRIVATE FUNCTION doRestRequestPhoto(l_param STRING, l_photo_file STRING) RETURNS BOOLEAN
+	DEFINE l_url STRING
+  DEFINE l_req com.HttpRequest
+  DEFINE l_resp com.HttpResponse
+  DEFINE l_stat SMALLINT
+
+	LET l_url = fgl_getResource("mobdemo.ws_url")||l_param
+	CALL gl_lib.gl_logIt("doRestRequest URL:"||NVL(l_url,"NULL"))
+--	DISPLAY "URL:",l_url
+-- Do Rest call to find out if we have a new GDC Update
+  TRY
+    LET l_req = com.HttpRequest.Create(l_url)
+    CALL l_req.setMethod("POST")
+    CALL l_req.setHeader("Content-Type", "application/jpg")
+    CALL l_req.setHeader("Accept", "application/jpg")
+		CALL l_req.doFileRequest(l_photo_file)
+    CALL l_req.doRequest()
+    LET l_resp = l_req.getResponse()
+    LET l_stat = l_resp.getStatusCode()
+    IF l_stat = 200 THEN
+      CALL util.JSON.parse( l_resp.getTextResponse(), m_ret )
+    ELSE
+      CALL gl_lib.gl_winMessage("WS Error",SFMT("WS call failed!\n%1\n%1-%2",l_url,l_stat, l_resp.getStatusDescription()),"exclamation")
+    END IF
+  CATCH
+    LET l_stat = STATUS
+    LET m_ret.reply = ERR_GET( l_stat )
+  END TRY
+	CALL gl_lib.gl_logIt("m_ret reply:"||NVL(m_ret.reply,"NULL"))
+	IF m_ret.stat != 200 THEN
+		CALL gl_lib.gl_winMessage("Error", m_ret.reply,"exclamation")
+		RETURN FALSE
+	END IF
+	RETURN TRUE
+END FUNCTION
