@@ -3,6 +3,7 @@
 
 IMPORT com
 IMPORT util
+IMPORT os
 IMPORT FGL gl_lib_restful
 IMPORT FGL lib_secure
 IMPORT FGL mob_ws_db
@@ -54,7 +55,16 @@ MAIN
 						OTHERWISE
 							CALL setReply(201,%"ERR",SFMT(%"Operation '%1' not found",gl_lib_restful.m_reqInfo.path))
 					END CASE
-					DISPLAY "Reply:", m_ret.reply
+					DISPLAY "Get Reply:", m_ret.reply
+					LET l_str = util.JSON.stringify(m_ret)
+			  WHEN "POST"
+					CASE
+						WHEN gl_lib_restful.m_reqInfo.path.equalsIgnoreCase("putPhoto") 
+							CALL putPhoto(l_req)
+						OTHERWISE
+							CALL setReply(201,%"ERR",SFMT(%"Operation '%1' not found",gl_lib_restful.m_reqInfo.path))
+					END CASE
+					DISPLAY "Post Reply:", m_ret.reply
 					LET l_str = util.JSON.stringify(m_ret)
 			  OTHERWISE
 					CALL gl_lib_restful.gl_setError("Unknown request:\n"||m_reqInfo.path||"\n"||m_reqInfo.method)
@@ -146,4 +156,34 @@ FUNCTION getCusts()
 	LET m_ret.stat = 200
 	LET m_ret.type = "OK"
 	LET m_ret.reply = l_data
+END FUNCTION
+--------------------------------------------------------------------------------
+-- putPhoto - handle a photo being received.
+FUNCTION putPhoto(l_req com.HTTPServiceRequest)
+	DEFINE l_photo_file STRING
+
+	DISPLAY "Getting photo ..."
+
+	IF NOT check_token() THEN RETURN END IF
+
+	TRY
+		LET l_photo_file = l_req.readFileRequest()
+	CATCH
+		LET m_ret.stat = 200
+		LET m_ret.type = "OK"
+		LET m_ret.reply = "Photo Receive Failed!"
+		RETURN
+	END TRY
+
+	DISPLAY "Got Photo:", l_photo_file
+
+	IF os.Path.exists( l_photo_file ) THEN
+		LET m_ret.stat = 200
+		LET m_ret.type = "OK"
+		LET m_ret.reply = "Photo transfered"
+	ELSE
+		LET m_ret.stat = 200
+		LET m_ret.type = "OK"
+		LET m_ret.reply = "Photo Doesn't Exist!"
+	END IF
 END FUNCTION

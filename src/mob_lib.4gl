@@ -1,10 +1,11 @@
 -- Core Mobile Library Code
 IMPORT com
 IMPORT util
+IMPORT os
 IMPORT FGL gl_lib
 IMPORT FGL lib_secure
 
-CONSTANT DB_VER = 2
+CONSTANT DB_VER = 1
 
 PRIVATE DEFINE m_security_token STRING
 PUBLIC DEFINE m_connected BOOLEAN
@@ -37,6 +38,10 @@ FUNCTION init_db() RETURNS BOOLEAN
 
 	TRY
 		SELECT version INTO l_ver FROM db_version
+		IF l_ver = DB_VER THEN
+			DISPLAY "DB Ver ",l_ver," Okay"
+			RETURN TRUE
+		END IF
 	CATCH
 		LET l_init_db = TRUE
 		CREATE TABLE db_version (
@@ -44,10 +49,6 @@ FUNCTION init_db() RETURNS BOOLEAN
 		)
 		LET l_ver = DB_VER
 	END TRY
-	IF l_ver = DB_VER THEN
-		DISPLAY "DB Ver ",l_ver," Okay"
-		RETURN TRUE
-	END IF
 
 	DISPLAY "Initializing DB ..."
 	DELETE FROM db_version
@@ -119,7 +120,7 @@ FUNCTION login() RETURNS BOOLEAN
 		EXIT WHILE
 	END WHILE
 
-	DISPLAY "Security Token is:", m_security_token
+	DISPLAY "Security Token is '", m_security_token,"'"
 
 	RETURN TRUE
 END FUNCTION
@@ -187,7 +188,7 @@ PRIVATE FUNCTION doRestRequest(l_param STRING) RETURNS BOOLEAN
     IF l_stat = 200 THEN
       CALL util.JSON.parse( l_resp.getTextResponse(), m_ret )
     ELSE
-      CALL gl_lib.gl_winMessage("WS Error",SFMT("WS call failed!\n%1\n%1-%2",l_url,l_stat, l_resp.getStatusDescription()),"exclamation")
+      CALL gl_lib.gl_winMessage("WS Error",SFMT("WS call failed!\n%1\n%2-%3",l_url,l_stat, l_resp.getStatusDescription()),"exclamation")
     END IF
   CATCH
     LET l_stat = STATUS
@@ -203,15 +204,15 @@ END FUNCTION
 
 
 --------------------------------------------------------------------------------
-FUNCTION ws_post_file(l_photo_file STRING) RETURNS STRING
-	IF NOT doRestRequestPhoto(SFMT("putPhoto?token=%1",m_security_token),l_photo_file) THEN
+FUNCTION ws_post_file(l_photo_file STRING, l_size INTEGER) RETURNS STRING
+	IF NOT doRestRequestPhoto(SFMT("putPhoto?token=%1",m_security_token),l_photo_file, l_size) THEN
 	END IF
 	DISPLAY m_ret.reply
 	RETURN m_ret.reply
 END FUNCTION
 --------------------------------------------------------------------------------
 -- Do the web service REST call to check for a new GDC
-PRIVATE FUNCTION doRestRequestPhoto(l_param STRING, l_photo_file STRING) RETURNS BOOLEAN
+PRIVATE FUNCTION doRestRequestPhoto(l_param STRING, l_photo_file STRING, l_size INTEGER) RETURNS BOOLEAN
 	DEFINE l_url STRING
   DEFINE l_req com.HttpRequest
   DEFINE l_resp com.HttpResponse
@@ -221,19 +222,20 @@ PRIVATE FUNCTION doRestRequestPhoto(l_param STRING, l_photo_file STRING) RETURNS
 	CALL gl_lib.gl_logIt("doRestRequest URL:"||NVL(l_url,"NULL"))
 --	DISPLAY "URL:",l_url
 -- Do Rest call to find out if we have a new GDC Update
+	DISPLAY "File:",l_photo_file, " Size:",l_size
   TRY
     LET l_req = com.HttpRequest.Create(l_url)
     CALL l_req.setMethod("POST")
-    CALL l_req.setHeader("Content-Type", "application/jpg")
-    CALL l_req.setHeader("Accept", "application/jpg")
+    CALL l_req.setHeader("Content-Type", "image/jpg")
+    CALL l_req.setHeader("Accept", "application/json")
+	--	CALL l_req.setHeader("Content-Length", l_size )
 		CALL l_req.doFileRequest(l_photo_file)
-    CALL l_req.doRequest()
     LET l_resp = l_req.getResponse()
     LET l_stat = l_resp.getStatusCode()
     IF l_stat = 200 THEN
       CALL util.JSON.parse( l_resp.getTextResponse(), m_ret )
     ELSE
-      CALL gl_lib.gl_winMessage("WS Error",SFMT("WS call failed!\n%1\n%1-%2",l_url,l_stat, l_resp.getStatusDescription()),"exclamation")
+      CALL gl_lib.gl_winMessage("WS Error",SFMT("WS call failed!\n%1\n%2-%3",l_url,l_stat, l_resp.getStatusDescription()),"exclamation")
     END IF
   CATCH
     LET l_stat = STATUS

@@ -62,11 +62,27 @@
   <PlatformList version="1.0"/>
   <Group environment="value:FGLAPPSERVER=8090" label="mob_project" language="Genero">
     <Group label="_Packages" language="Genero">
+      <Package binaryName="mob_demo10" dependencies="400358049,781919164,159917928,212784684,715422167,362164715,313644474,-994061721,455109296" description="Android Package" distDirectory="$(ProjectDir)/distbin10" label="mob_demo10" platform="Android">
+        <DynamicProperty name="packageId" value="com.fourjs.njmmobdemo10"/>
+        <DynamicProperty name="packageLabel" value="MobDemo10"/>
+        <DynamicProperty name="packageVersion" value="100010"/>
+        <DynamicProperty name="packageVersionName" value="1000.10"/>
+        <DynamicProperty name="permissions" value="ACCESS_NETWORK_STATE;ACCESS_WIFI_STATE;CHANGE_NETWORK_STATE;INSTALL_SHORTCUT;INTERNET;MOUNT_FORMAT_FILESYSTEMS;READ_LOGS;WRITE_EXTERNAL_STORAGE"/>
+        <Directory description="Binaries" excludedFiles="Test.42r" includedFiles="*.42?" label="Binaries" recursive="false" sourceDirectory="$(ProjectDir)/bin"/>
+        <Directory description="Binaries" excludedFiles="Test.42r" includedFiles="*.42?" label="Binaries_common" recursive="false" sourceDirectory="$(ProjectDir)/bin_common"/>
+        <Directory description="Configuration Files" includedFiles="fglprofile" label="Config" recursive="false" sourceDirectory="$(ProjectDir)/config"/>
+        <Directory description="Database" includedFiles="*.db" label="Database" recursive="false" sourceDirectory="$(ProjectDir)/database"/>
+        <Directory description="Images" includedFiles="*.png,*.jpg,*.ttf,image2font.txt" label="Images" sourceDirectory="$(ProjectDir)/images"/>
+        <Directory description="Studio Library" includedFiles="*.42?" label="libgst" recursive="false" sourceDirectory="$(GSTLIBRARYDIR)/bin"/>
+        <Directory description="Resources" includedFiles="*.4ad,*.4st,*.4tm,*.4tb,*.4sm,*.42s,*.iem" label="Resources" recursive="false" sourceDirectory="$(ProjectDir)/resources"/>
+        <Directory description="Web Components" destinationDirectory="$(RootDir)/webcomponents" label="Webcomponents" sourceDirectory="$(ProjectDir)/webcomponents"/>
+      </Package>
       <Package binaryName="mob_demo12" dependencies="400358049,781919164,159917928,212784684,715422167,362164715,313644474,-994061721,455109296" description="Android Package" distDirectory="$(ProjectDir)/distbin12" label="mob_demo12" platform="Android">
         <DynamicProperty name="packageId" value="com.fourjs.njmmobdemo12"/>
-        <DynamicProperty name="packageLabel" value="MobDemo"/>
+        <DynamicProperty name="packageLabel" value="MobDemo12"/>
         <DynamicProperty name="packageVersion" value="100012"/>
         <DynamicProperty name="packageVersionName" value="1000.12"/>
+        <DynamicProperty name="permissions" value="ACCESS_NETWORK_STATE;ACCESS_WIFI_STATE;CHANGE_NETWORK_STATE;INSTALL_SHORTCUT;INTERNET;MOUNT_FORMAT_FILESYSTEMS;READ_LOGS;WRITE_EXTERNAL_STORAGE"/>
         <Directory description="Binaries" excludedFiles="Test.42r" includedFiles="*.42?" label="Binaries" recursive="false" sourceDirectory="$(ProjectDir)/bin"/>
         <Directory description="Binaries" excludedFiles="Test.42r" includedFiles="*.42?" label="Binaries_common" recursive="false" sourceDirectory="$(ProjectDir)/bin_common"/>
         <Directory description="Configuration Files" includedFiles="fglprofile" label="Config" recursive="false" sourceDirectory="$(ProjectDir)/config"/>
@@ -110,6 +126,7 @@
           <File filePath="src/cust_list.per"/>
           <File filePath="src/demo_main.per"/>
           <File filePath="src/mob_login.per"/>
+          <File filePath="src/show_photo.per"/>
         </VirtualFolder>
         <File filePath="src/mob_demo.4gl"/>
         <File filePath="src/mob_lib.4gl"/>

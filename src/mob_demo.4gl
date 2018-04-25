@@ -3,6 +3,7 @@
 -- A Genero Mobile demo with web service framework.
 
 IMPORT util
+IMPORT os
 
 IMPORT FGL mob_lib
 IMPORT FGL gl_lib
@@ -137,7 +138,35 @@ END FUNCTION
 --------------------------------------------------------------------------------
 -- Take a Photo
 FUNCTION take_photo()
-  DEFINE l_photo_file STRING
-	CALL ui.Interface.frontCall("mobile","takePhoto",[],[l_photo_file])
-	DISPLAY l_photo_file
+  DEFINE l_photo_file, l_local_file, l_ret STRING
+	DEFINE l_image BYTE
+	OPEN WINDOW show_photo WITH FORM "show_photo"
+
+	CALL ui.Interface.frontCall("mobile","choosePhoto",[],[l_photo_file])
+	DISPLAY l_photo_file TO f_lpath
+	DISPLAY l_photo_file TO f_photo
+
+	LET l_local_file = util.Datetime.format( CURRENT, "%Y%m%d_%H%M%S.jpg" )
+	TRY
+		CALL fgl_getfile(l_photo_file,l_local_file)
+	CATCH
+		CALL gl_lib.gl_winMessage("Error",ERR_GET( STATUS ),"exclamation")
+	END TRY
+	DISPLAY l_local_file TO f_path
+	IF os.path.exists( l_local_file ) THEN
+		DISPLAY "Exists:"||l_local_file TO f_path
+	ELSE
+		DISPLAY "Missing:"||l_local_file TO f_path
+	END IF
+	DISPLAY os.path.size(l_local_file) TO f_size
+	LOCATE l_image IN FILE l_local_file
+	DISPLAY l_image TO f_photo
+
+	MENU
+		ON ACTION send
+			LET l_ret = mob_lib.ws_post_file( l_local_file, os.path.size(l_local_file) )
+			CALL gl_lib.gl_winMessage("Info",l_ret,"information")
+		ON ACTION back EXIT MENU
+	END MENU
+	CLOSE WINDOW show_photo
 END FUNCTION

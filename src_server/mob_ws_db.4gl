@@ -35,14 +35,14 @@ FUNCTION db_check_user( l_user CHAR(30), l_pass CHAR(30) ) RETURNS STRING
 	IF STATUS = NOTFOUND THEN
 		LET l_token = db_register_user(l_user,l_pass)
 		DISPLAY "Registered user '", l_user CLIPPED,"' with token '",l_token,"'"
-		RETURN l_token
+		RETURN l_token.trim()
 	END IF
 	IF NOT lib_secure.glsec_chkPassword(l_pass ,l_pass_hash ,l_salt, NULL ) THEN
 		DISPLAY "User '", l_user CLIPPED,"' password mismatch!"
 		RETURN NULL
 	END IF
 	DISPLAY "User '", l_user CLIPPED,"' Registered Already with token '",l_token,"'"
-	RETURN l_token
+	RETURN l_token.trim()
 END FUNCTION
 --------------------------------------------------------------------------------
 -- Register new user
