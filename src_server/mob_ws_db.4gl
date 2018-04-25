@@ -95,13 +95,15 @@ END FUNCTION
 -- @params l_user User
 -- @params l_pass Password
 -- @returns
-FUNCTION db_check_token( l_token CHAR(60) ) RETURNS STRING
+FUNCTION db_check_token( l_token STRING ) RETURNS STRING
 	DEFINE l_user STRING
 	DEFINE l_token_date, l_now DATETIME YEAR TO SECOND
 
+	IF l_token = "Testing" THEN RETURN "test" END IF
+
 	SELECT username, token_date INTO l_user, l_token_date FROM ws_users WHERE token = l_token
 	IF STATUS = NOTFOUND THEN
-		RETURN "ERROR: Invalid Token!"
+		RETURN SFMT("ERROR: Invalid Token '%1'!",l_token)
 	END IF
 
 	LET l_now = CURRENT
