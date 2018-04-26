@@ -1,14 +1,24 @@
 
 -- DB Functions
-
-IMPORT FGL lib_secure
 IMPORT security
 IMPORT util
 
+IMPORT FGL gl_lib
+IMPORT FGL lib_secure
+
 --------------------------------------------------------------------------------
 FUNCTION db_connect()
+	DEFINE l_dbname STRING
+	LET l_dbname = fgl_getEnv("DBNAME")
+	IF l_dbname.getLength() < 2 THEN LET l_dbname = "njm_demo310" END IF
 
-  CONNECT TO "njm_demo310"
+	TRY
+  	CONNECT TO l_dbname
+		CALL gl_lib.gl_logIt(SFMT(%"Connected to %1",l_dbname))
+	CATCH
+		CALL gl_lib.gl_logIt(SFMT(%"ERROR: Failed to connect to %1",l_dbname))
+		EXIT PROGRAM
+	END TRY
 
 	TRY
 		CREATE TABLE ws_users (
@@ -20,6 +30,7 @@ FUNCTION db_connect()
 		)
 	CATCH
 	END TRY
+
 END FUNCTION
 
 --------------------------------------------------------------------------------
@@ -38,22 +49,22 @@ FUNCTION db_check_user( l_user CHAR(30), l_pass CHAR(30) ) RETURNS STRING
 		FROM ws_users WHERE username = l_user
 	IF STATUS = NOTFOUND THEN
 		LET l_token = db_register_user(l_user,l_pass)
-		DISPLAY "Registered user '", l_user CLIPPED,"' with token '",l_token,"'"
+		CALL gl_lib.gl_logIt(SFMT(%"Registered user '%1' with token '%2'", l_user CLIPPED,l_token))
 		RETURN l_token.trim()
 	END IF
 	IF NOT lib_secure.glsec_chkPassword(l_pass ,l_pass_hash ,l_salt, NULL ) THEN
-		DISPLAY "User '", l_user CLIPPED,"' password mismatch!"
+		CALL gl_lib.gl_logIt(SFMT(%"User '%1' password mismatch!", l_user CLIPPED))
 		RETURN NULL
 	END IF
 	LET l_token = l_token.trim()
 	IF l_token_date > ( l_now - 1 UNITS DAY ) THEN
-		DISPLAY "User '", l_user CLIPPED,"' Registered Already with token '",l_token,"'"
+		CALL gl_lib.gl_logIt(SFMT(%"User '%1' already registered with token '%2'", l_user CLIPPED,l_token))
 		RETURN l_token
 	ELSE
 		LET l_token = security.RandomGenerator.CreateUUIDString()
 		UPDATE ws_users SET ( token, token_date ) = ( l_token, l_now )
 			WHERE username = l_user
-		DISPLAY "User '", l_user CLIPPED,"' Registered Already but token expired, new is '",l_token,"'"
+		CALL gl_lib.gl_logIt(SFMT(%"User '%1' Registered already but token expired, new is '%2'", l_user CLIPPED,l_token))
 	END IF
 	RETURN l_token
 END FUNCTION
@@ -87,15 +98,14 @@ FUNCTION db_check_token( l_token STRING ) RETURNS STRING
 
 	SELECT username, token_date INTO l_user, l_token_date FROM ws_users WHERE token = l_token
 	IF STATUS = NOTFOUND THEN
-		RETURN SFMT("ERROR: Invalid Token '%1'!",l_token)
+		RETURN SFMT(%"ERROR: Invalid Token '%1'!",l_token)
 	END IF
 
 	LET l_now = CURRENT
 	IF l_token_date > ( l_now - 1 UNITS DAY ) THEN
-		DISPLAY "Token Okay"
 		RETURN l_user
 	ELSE
-		RETURN "ERROR: Token expired!"
+		RETURN %"ERROR: Token expired!"
 	END IF
 END FUNCTION
 

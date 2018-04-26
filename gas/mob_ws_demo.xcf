@@ -6,8 +6,8 @@
 		<LONG>SOAP WEB SERVICE EXAMPLE</LONG>
 	</DESCRIPTION-->
 	<RESOURCE Id="res.app.path" Source="INTERNAL">$(res.deployment.path)</RESOURCE>
-
 	<EXECUTION>
+    <ENVIRONMENT_VARIABLE Id="DBNAME">njm_demo310</ENVIRONMENT_VARIABLE>
 		<PATH>$(res.app.path)</PATH>
 		<MODULE>mob_ws_demo.42r</MODULE>
 	</EXECUTION>
