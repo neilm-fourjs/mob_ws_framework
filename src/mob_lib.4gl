@@ -6,10 +6,12 @@ IMPORT FGL gl_lib
 IMPORT FGL lib_secure
 
 CONSTANT DB_VER = 1
+CONSTANT WS_VER = 2
 
 PRIVATE DEFINE m_security_token STRING
 PUBLIC DEFINE m_connected BOOLEAN
 PUBLIC DEFINE m_ret RECORD
+		ver SMALLINT,
 		stat SMALLINT,
 		type STRING,
   	reply STRING
@@ -91,7 +93,7 @@ END FUNCTION
 FUNCTION login() RETURNS BOOLEAN
 	DEFINE l_user, l_pass STRING
 	DEFINE l_salt, l_pass_hash STRING
-	DEFINE l_datetime DATETIME YEAR TO SECOND 
+	DEFINE l_now, l_token_date DATETIME YEAR TO SECOND 
 
 	OPEN FORM mob_login FROM "mob_login"
 	DISPLAY FORM mob_login
@@ -102,22 +104,31 @@ FUNCTION login() RETURNS BOOLEAN
 		INPUT BY NAME l_user, l_pass
 
 		IF int_flag THEN EXIT PROGRAM END IF
-
-		SELECT pass_hash, salt, token  INTO l_pass_hash,l_salt,m_security_token FROM users WHERE username = l_user
-		IF STATUS = NOTFOUND THEN
-			IF NOT set_security_token( l_user, l_pass ) THEN RETURN FALSE END IF
-			LET l_salt = lib_secure.glsec_genSalt( NULL )
-			LET l_pass_hash = lib_secure.glsec_genPasswordHash(l_pass, l_salt, NULL)
-			LET l_datetime = CURRENT
-			INSERT INTO users VALUES(l_user, l_pass_hash, l_salt, m_security_token, l_datetime )
-			EXIT WHILE
-		ELSE
+		LET l_now = CURRENT
+		LET l_salt = NULL
+		SELECT pass_hash, salt, token, token_date  
+			INTO l_pass_hash,l_salt,m_security_token, l_token_date
+			FROM users WHERE username = l_user
+		IF STATUS != NOTFOUND THEN
 			IF NOT lib_secure.glsec_chkPassword(l_pass ,l_pass_hash ,l_salt, NULL ) THEN
 				CALL gl_lib.gl_winMessage("Error","Login Failed","exclamation")
 				CONTINUE WHILE
-			END IF
+			END IF 
+			IF l_token_date > ( l_now - 1 UNITS DAY ) THEN EXIT WHILE END IF -- all okay, exit the while
 		END IF
+-- user not in DB or token expired - connect to server for login check / new token.
+		IF NOT set_security_token( l_user, l_pass ) THEN RETURN FALSE END IF
+		IF l_salt IS NULL THEN
+			LET l_salt = lib_secure.glsec_genSalt( NULL )
+			LET l_pass_hash = lib_secure.glsec_genPasswordHash(l_pass, l_salt, NULL)
+			INSERT INTO users VALUES(l_user, l_pass_hash, l_salt, m_security_token, l_now )
+		ELSE
+			UPDATE users SET ( token, token_date ) = ( m_security_token, l_now )
+				WHERE username = l_user
+		END IF
+
 		EXIT WHILE
+
 	END WHILE
 
 	DISPLAY "Security Token is '", m_security_token,"'"
@@ -150,6 +161,10 @@ FUNCTION set_security_token( l_user STRING, l_pass STRING )
 -- call the restful service to get the security token
 	IF NOT doRestRequest( SFMT("getToken?xml=%1",l_xml_creds)) THEN
 		RETURN FALSE
+	END IF
+
+	IF m_ret.ver != WS_VER THEN
+		CALL gl_lib.gl_winMessage("Error",SFMT("Webversion Version Mismatch\nGot %1, expected %2",m_ret.ver,WS_VER),"exclamation")
 	END IF
 
 	LET m_security_token = m_ret.reply
@@ -228,6 +243,7 @@ PRIVATE FUNCTION doRestRequestPhoto(l_param STRING, l_photo_file STRING, l_size 
     CALL l_req.setMethod("POST")
     CALL l_req.setHeader("Content-Type", "image/jpg")
     CALL l_req.setHeader("Accept", "application/json")
+		CALL l_req.setVersion("1.0")
 	--	CALL l_req.setHeader("Content-Length", l_size )
 		CALL l_req.doFileRequest(l_photo_file)
     LET l_resp = l_req.getResponse()

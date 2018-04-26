@@ -35,7 +35,9 @@ MAIN
 		ON ACTION list_custs
 			CALL list_custs()
 		ON ACTION take_photo
-			CALL take_photo()
+			CALL photo(TRUE)
+		ON ACTION choose_photo
+			CALL photo(FALSE)
 		ON ACTION send_data
 			CALL send_data()
 		ON ACTION about
@@ -138,13 +140,17 @@ FUNCTION get_custs()
 	DISPLAY m_custs.getLength()," from server"
 END FUNCTION
 --------------------------------------------------------------------------------
--- Take a Photo
-FUNCTION take_photo()
+-- Photo
+FUNCTION photo(l_take BOOLEAN)
   DEFINE l_photo_file, l_local_file, l_ret STRING
 	DEFINE l_image BYTE
 	OPEN WINDOW show_photo WITH FORM "show_photo"
 
-	CALL ui.Interface.frontCall("mobile","choosePhoto",[],[l_photo_file])
+	IF l_take THEN
+		CALL ui.Interface.frontCall("mobile","takePhoto",[],[l_photo_file])
+	ELSE
+		CALL ui.Interface.frontCall("mobile","choosePhoto",[],[l_photo_file])
+	END IF
 	DISPLAY l_photo_file TO f_lpath
 	DISPLAY l_photo_file TO f_photo
 

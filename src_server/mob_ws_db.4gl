@@ -31,7 +31,11 @@ END FUNCTION
 FUNCTION db_check_user( l_user CHAR(30), l_pass CHAR(30) ) RETURNS STRING
 	DEFINE l_token STRING
 	DEFINE l_salt, l_pass_hash STRING
-	SELECT pass_hash, salt, token  INTO l_pass_hash, l_salt, l_token FROM ws_users WHERE username = l_user
+	DEFINE l_token_date, l_now DATETIME YEAR TO SECOND
+	LET l_now = CURRENT
+	SELECT pass_hash, salt, token, token_date  
+		INTO l_pass_hash, l_salt, l_token, l_token_date
+		FROM ws_users WHERE username = l_user
 	IF STATUS = NOTFOUND THEN
 		LET l_token = db_register_user(l_user,l_pass)
 		DISPLAY "Registered user '", l_user CLIPPED,"' with token '",l_token,"'"
@@ -41,7 +45,15 @@ FUNCTION db_check_user( l_user CHAR(30), l_pass CHAR(30) ) RETURNS STRING
 		DISPLAY "User '", l_user CLIPPED,"' password mismatch!"
 		RETURN NULL
 	END IF
-	DISPLAY "User '", l_user CLIPPED,"' Registered Already with token '",l_token,"'"
+	IF l_token_date > ( l_now - 1 UNITS DAY ) THEN
+		DISPLAY "User '", l_user CLIPPED,"' Registered Already with token '",l_token,"'"
+		RETURN l_user
+	ELSE
+		LET l_token = security.RandomGenerator.CreateUUIDString()
+		UPDATE ws_users SET ( token, token_date ) = ( l_token, l_now )
+			WHERE username = l_user
+		DISPLAY "User '", l_user CLIPPED,"' Registered Already but token expired, new is '",l_token,"'"
+	END IF
 	RETURN l_token.trim()
 END FUNCTION
 --------------------------------------------------------------------------------

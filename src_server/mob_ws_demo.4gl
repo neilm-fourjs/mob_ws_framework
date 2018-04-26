@@ -8,7 +8,10 @@ IMPORT FGL gl_lib_restful
 IMPORT FGL lib_secure
 IMPORT FGL mob_ws_db
 
+CONSTANT WS_VER = 2
+
 DEFINE m_ret RECORD
+		ver SMALLINT,
 		stat SMALLINT,
 		type STRING,
   	reply STRING
@@ -21,6 +24,8 @@ MAIN
 	DEFINE l_str STRING
 	DEFINE l_quit BOOLEAN
   DEFER INTERRUPT
+
+	LET m_ret.ver = WS_VER
 
 	CALL mob_ws_db.db_connect()
 
