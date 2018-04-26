@@ -67,9 +67,9 @@ MAIN
 					LET l_str = util.JSON.stringify(m_ret)
 			  WHEN "POST"
 					CASE
-						WHEN gl_lib_restful.m_reqInfo.path.equalsIgnoreCase("getPhoto") 
+						WHEN gl_lib_restful.m_reqInfo.path.equalsIgnoreCase("putPhoto") 
 							CALL getPhoto(l_req)
-						WHEN gl_lib_restful.m_reqInfo.path.equalsIgnoreCase("getData")
+						WHEN gl_lib_restful.m_reqInfo.path.equalsIgnoreCase("sendData")
 							CALL getData(l_req)
 						OTHERWISE
 							CALL setReply(201,%"ERR",SFMT(%"Operation '%1' not found",gl_lib_restful.m_reqInfo.path))
