@@ -18,7 +18,7 @@ DEFINE m_src_custs DYNAMIC ARRAY OF RECORD
 		line1 STRING,
 		line2 STRING
 	END RECORD
-
+DEFINE m_custs_date DATETIME YEAR TO SECOND
 MAIN
 
 	CALL mob_lib.init_app()
@@ -63,6 +63,7 @@ FUNCTION list_custs()
 		LET m_src_custs[x].line1 = m_custs[x].acc," ",m_custs[x].cust_name
 		LET m_src_custs[x].line2 = m_custs[x].add1
 	END FOR
+	MESSAGE "Data as of: "||m_custs_date
 	DISPLAY ARRAY m_src_custs TO scr_arr.* ATTRIBUTES(ACCEPT=FALSE,CANCEL=FALSE)
 		ON ACTION select
 			CALL show_cust( arr_curr() )
@@ -73,9 +74,41 @@ FUNCTION list_custs()
 END FUNCTION
 --------------------------------------------------------------------------------
 FUNCTION show_cust(l_cust SMALLINT)
+	DEFINE l_extra RECORD
+		extra_data CHAR(60)
+	END RECORD
+	DEFINE l_json STRING
+	DEFINE l_updated_date, l_now DATETIME YEAR TO SECOND
+
+	LET l_now = CURRENT
 	OPEN WINDOW cust_det WITH FORM "cust_dets"
 
+	SELECT extra, updated_date
+		INTO l_extra.extra_data, l_updated_date
+	 FROM custdets WHERE acc = m_custs[ l_cust ].acc
+
+	IF l_updated_date IS NOT NULL
+	AND l_updated_date > ( l_now - 1 UNITS DAY ) THEN
+-- got data from db and current
+	ELSE
+		IF NOT mob_lib.check_network() THEN
+			IF l_updated_date IS NULL THEN
+				CALL gl_lib.gl_winMessage("Error","Not connected and not available locally","exclamation")
+			ELSE
+-- data is stale
+			END IF
+		ELSE
+			LET l_updated_date = l_now
+			LET l_json = mob_lib.ws_get_custDets( m_custs[ l_cust ].acc )
+			CALL util.JSON.parse(l_json, l_extra)
+			DELETE FROM custdets WHERE acc = m_custs[ l_cust ].acc
+			INSERT INTO custdets VALUES(m_custs[ l_cust ].acc, l_extra.extra_data, l_now)
+		END IF
+	END IF
+
+	DISPLAY "Data as of: "||l_updated_date TO f_info
 	DISPLAY BY NAME m_custs[ l_cust ].*
+	DISPLAY l_extra.extra_data TO f_extra
 
 	MENU
 		ON ACTION back EXIT MENU
@@ -100,13 +133,14 @@ FUNCTION get_custs()
 		LET l_user_local = TRUE
 	END IF
 
-	IF NOT mob_lib.m_connected THEN 
-		IF NOT l_user_local AND l_updated_date IS NOT NULL THEN
+	IF NOT mob_lib.check_network() THEN  -- no connection
+		IF NOT l_user_local AND l_updated_date IS NOT NULL THEN -- stale data
 			CALL gl_lib.gl_winMessage("Warning",SFMT("Data is from %1\nYou are not connected to a network",l_updated_date),"exclamation")
 			LET l_user_local = TRUE
 		END IF
-		IF l_updated_date IS NULL THEN
+		IF l_updated_date IS NULL THEN -- no data
 			CALL gl_lib.gl_winMessage("Error","No local data and no connection!","exclamation")
+			LET m_custs_date = NULL
 			RETURN
 		END IF
 	END IF
@@ -116,12 +150,11 @@ FUNCTION get_custs()
 		FOREACH cust_cur INTO m_custs[ m_custs.getLength() + 1].*
 		END FOREACH
 		CALL m_custs.deleteElement( m_custs.getLength() )
-		MESSAGE m_custs.getLength()," from local db"
-		DISPLAY m_custs.getLength()," from local db"
+		LET m_custs_date = l_updated_date
 		RETURN
 	END IF
 
-	LET l_json = ws_get_custs()
+	LET l_json = mob_lib.ws_get_custs()
 	IF l_json IS NOT NULL THEN
 		CALL util.JSON.parse(l_json, m_custs )
 	ELSE
@@ -133,7 +166,7 @@ FUNCTION get_custs()
 	FOR x = 1 TO m_custs.getLength()
 		INSERT INTO customers VALUES( m_custs[x].* )
 	END FOR
-
+	LET m_custs_date = l_now
 	DELETE FROM table_updated WHERE table_name = "customers"
 	INSERT INTO table_updated VALUES("customers",l_now )
 	MESSAGE m_custs.getLength()," from server"
@@ -172,18 +205,25 @@ FUNCTION photo(l_take BOOLEAN)
 
 	MENU
 		ON ACTION send
-			LET l_ret = mob_lib.ws_post_file( l_local_file, os.path.size(l_local_file) )
-			CALL gl_lib.gl_winMessage("Info",l_ret,"information")
+			IF mob_lib.check_network() THEN
+				LET l_ret = mob_lib.ws_post_file( l_local_file, os.path.size(l_local_file) )
+				CALL gl_lib.gl_winMessage("Info",l_ret,"information")
+			ELSE
+				CALL gl_lib.gl_winMessage("Error","No network connection","exclamation")
+			END IF
 		ON ACTION back EXIT MENU
 	END MENU
 	CLOSE WINDOW show_photo
 END FUNCTION
 --------------------------------------------------------------------------------
+-- send some data to the server
 FUNCTION send_data()
 	DEFINE l_data STRING
 
 	LET l_data = util.JSON.stringify(m_custs)
-
-	CALL ws_send_data(l_data)
+	IF mob_lib.check_network() THEN
+		CALL mob_lib.ws_send_data(l_data)
+	ELSE
+		CALL gl_lib.gl_winMessage("Error","No network connection","exclamation")
+	END IF
 END FUNCTION
-

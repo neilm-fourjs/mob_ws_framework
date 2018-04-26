@@ -5,7 +5,7 @@ IMPORT os
 IMPORT FGL gl_lib
 IMPORT FGL lib_secure
 
-CONSTANT DB_VER = 1
+CONSTANT DB_VER = 2
 CONSTANT WS_VER = 3
 
 PRIVATE DEFINE m_security_token STRING
@@ -76,6 +76,16 @@ FUNCTION init_db() RETURNS BOOLEAN
 		cust_name CHAR(30),
 		add1 CHAR(30),
 		add2 CHAR(30)
+	)
+
+	TRY
+		DROP TABLE custdets
+	CATCH
+	END TRY
+	CREATE TABLE custdets (
+		acc CHAR(10),
+		extra CHAR(60),
+		updated_date DATETIME YEAR TO SECOND
 	)
 
 	TRY
@@ -181,6 +191,14 @@ FUNCTION ws_get_custs() RETURNS STRING
 END FUNCTION
 
 --------------------------------------------------------------------------------
+FUNCTION ws_get_custDets(l_acc STRING) RETURNS STRING
+	IF NOT doRestRequest(SFMT("getCustDets?token=%1&acc=%2",m_security_token,l_acc)) THEN
+		RETURN NULL
+	END IF
+	DISPLAY m_ret.reply
+	RETURN m_ret.reply
+END FUNCTION
+--------------------------------------------------------------------------------
 -- Do the web service REST call to check for a new GDC
 PRIVATE FUNCTION doRestRequest(l_param STRING) RETURNS BOOLEAN
 	DEFINE l_url STRING
@@ -217,7 +235,6 @@ PRIVATE FUNCTION doRestRequest(l_param STRING) RETURNS BOOLEAN
 	RETURN TRUE
 END FUNCTION
 
-
 --------------------------------------------------------------------------------
 FUNCTION ws_post_file(l_photo_file STRING, l_size INTEGER) RETURNS STRING
 	IF NOT doRestRequestPhoto(SFMT("putPhoto?token=%1",m_security_token),l_photo_file, l_size) THEN
@@ -225,6 +242,7 @@ FUNCTION ws_post_file(l_photo_file STRING, l_size INTEGER) RETURNS STRING
 	DISPLAY m_ret.reply
 	RETURN m_ret.reply
 END FUNCTION
+
 --------------------------------------------------------------------------------
 -- Do the web service REST call to check for a new GDC
 PRIVATE FUNCTION doRestRequestPhoto(l_param STRING, l_photo_file STRING, l_size INTEGER) RETURNS BOOLEAN
@@ -264,7 +282,6 @@ PRIVATE FUNCTION doRestRequestPhoto(l_param STRING, l_photo_file STRING, l_size 
 	END IF
 	RETURN TRUE
 END FUNCTION
-
 
 --------------------------------------------------------------------------------
 -- Send some json data back to server
