@@ -8,7 +8,7 @@ IMPORT FGL gl_lib_restful
 IMPORT FGL lib_secure
 IMPORT FGL mob_ws_db
 
-CONSTANT WS_VER = 2
+CONSTANT WS_VER = 3
 
 DEFINE m_ret RECORD
 		ver SMALLINT,
@@ -57,6 +57,8 @@ MAIN
 							CALL getToken()
 						WHEN gl_lib_restful.m_reqInfo.path.equalsIgnoreCase("getCusts") 
 							CALL getCusts()
+						WHEN gl_lib_restful.m_reqInfo.path.equalsIgnoreCase("getCustDets") 
+							CALL getCustDets()
 						OTHERWISE
 							CALL setReply(201,%"ERR",SFMT(%"Operation '%1' not found",gl_lib_restful.m_reqInfo.path))
 					END CASE
@@ -122,7 +124,7 @@ FUNCTION getToken()
 
 	CALL lib_secure.glsec_decryptCreds( l_xml ) RETURNING l_user, l_pass
 
-	LET m_ret.reply = db_check_user( l_user, l_pass )
+	LET m_ret.reply = mob_ws_db.db_check_user( l_user, l_pass )
 	IF m_ret.reply IS NULL THEN
 		CALL setReply(202,%"ERR",%"Login Invalid!")
 		RETURN
@@ -158,7 +160,31 @@ FUNCTION getCusts()
 
 	DISPLAY "Return customer list for user:",m_user
 
-	LET l_data = db_get_custs()
+	LET l_data = mob_ws_db.db_get_custs()
+
+	LET m_ret.stat = 200
+	LET m_ret.type = "OK"
+	LET m_ret.reply = l_data
+END FUNCTION
+--------------------------------------------------------------------------------
+FUNCTION getCustDets()
+	DEFINE l_data, l_acc STRING
+	DEFINE x SMALLINT
+
+	LET x = gl_lib_restful.gl_getParameterIndex("acc") 
+	IF x = 0 THEN
+		CALL setReply(202,%"ERR",%"Missing parameter 'acc'!")
+		RETURN
+	END IF
+	LET l_acc = gl_lib_restful.gl_getParameterValue(x)
+	IF l_acc.getLength() < 2 THEN
+		CALL setReply(202,%"ERR",%"Parameter 'acc' looks invalid!")
+		RETURN
+	END IF
+
+	DISPLAY "Return customer details for customer:",l_acc
+
+	LET l_data = mob_ws_db.db_get_custDets(l_acc)
 
 	LET m_ret.stat = 200
 	LET m_ret.type = "OK"

@@ -45,16 +45,17 @@ FUNCTION db_check_user( l_user CHAR(30), l_pass CHAR(30) ) RETURNS STRING
 		DISPLAY "User '", l_user CLIPPED,"' password mismatch!"
 		RETURN NULL
 	END IF
+	LET l_token = l_token.trim()
 	IF l_token_date > ( l_now - 1 UNITS DAY ) THEN
 		DISPLAY "User '", l_user CLIPPED,"' Registered Already with token '",l_token,"'"
-		RETURN l_user
+		RETURN l_token
 	ELSE
 		LET l_token = security.RandomGenerator.CreateUUIDString()
 		UPDATE ws_users SET ( token, token_date ) = ( l_token, l_now )
 			WHERE username = l_user
 		DISPLAY "User '", l_user CLIPPED,"' Registered Already but token expired, new is '",l_token,"'"
 	END IF
-	RETURN l_token.trim()
+	RETURN l_token
 END FUNCTION
 --------------------------------------------------------------------------------
 -- Register new user
@@ -73,8 +74,38 @@ FUNCTION db_register_user( l_user CHAR(30), l_pass CHAR(30)) RETURNS STRING
 	RETURN l_token
 END FUNCTION
 --------------------------------------------------------------------------------
--- Get Customers
+-- Check the Token used is registered to a user and not expired.
 --
+-- @params l_user User
+-- @params l_pass Password
+-- @returns
+FUNCTION db_check_token( l_token STRING ) RETURNS STRING
+	DEFINE l_user STRING
+	DEFINE l_token_date, l_now DATETIME YEAR TO SECOND
+
+	IF l_token = "JustTesting" THEN RETURN "test" END IF
+
+	SELECT username, token_date INTO l_user, l_token_date FROM ws_users WHERE token = l_token
+	IF STATUS = NOTFOUND THEN
+		RETURN SFMT("ERROR: Invalid Token '%1'!",l_token)
+	END IF
+
+	LET l_now = CURRENT
+	IF l_token_date > ( l_now - 1 UNITS DAY ) THEN
+		DISPLAY "Token Okay"
+		RETURN l_user
+	ELSE
+		RETURN "ERROR: Token expired!"
+	END IF
+END FUNCTION
+
+
+-- Example code:
+
+--------------------------------------------------------------------------------
+-- Get Customers - DUMMY CODE
+--
+-- @returns json string of the data
 FUNCTION db_get_custs() RETURNS STRING
 DEFINE l_custs DYNAMIC ARRAY OF RECORD
 		acc CHAR(10),
@@ -102,28 +133,17 @@ DEFINE l_custs DYNAMIC ARRAY OF RECORD
 	RETURN util.JSON.stringify(l_custs)
 END FUNCTION
 --------------------------------------------------------------------------------
--- Check the Token used is registered to a user and not expired.
+-- Get the details for the customer - DUMMY CODE
 --
--- @params l_user User
--- @params l_pass Password
--- @returns
-FUNCTION db_check_token( l_token STRING ) RETURNS STRING
-	DEFINE l_user STRING
-	DEFINE l_token_date, l_now DATETIME YEAR TO SECOND
+-- @params l_acc Customer account no
+-- @returns json string of the data
+FUNCTION db_get_custDets(l_acc STRING)
+	DEFINE l_custDets RECORD
+		extra_data STRING
+	END RECORD
 
-	IF l_token = "Testing" THEN RETURN "test" END IF
+	LET l_custDets.extra_data = "More data for acc ",l_acc
 
-	SELECT username, token_date INTO l_user, l_token_date FROM ws_users WHERE token = l_token
-	IF STATUS = NOTFOUND THEN
-		RETURN SFMT("ERROR: Invalid Token '%1'!",l_token)
-	END IF
-
-	LET l_now = CURRENT
-	IF l_token_date > ( l_now - 1 UNITS DAY ) THEN
-		DISPLAY "Token Okay"
-		RETURN l_user
-	ELSE
-		RETURN "ERROR: Token expired!"
-	END IF
+	RETURN util.JSON.stringify(l_custDets)
 END FUNCTION
 --------------------------------------------------------------------------------
