@@ -1,5 +1,5 @@
+
 dbi.default.driver = "dbmsqt"
-dbi.database.mydatabase.source = "mydatabase.db"
 
 mobile.environment.fglimagepath = "."
 

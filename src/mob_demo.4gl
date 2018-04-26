@@ -6,6 +6,7 @@ IMPORT util
 IMPORT os
 
 IMPORT FGL mob_lib
+IMPORT FGL mob_ws_lib
 IMPORT FGL gl_lib
 
 DEFINE m_custs DYNAMIC ARRAY OF RECORD
@@ -17,6 +18,9 @@ DEFINE m_custs DYNAMIC ARRAY OF RECORD
 DEFINE m_src_custs DYNAMIC ARRAY OF RECORD
 		line1 STRING,
 		line2 STRING
+	END RECORD
+DEFINE m_custDets RECORD
+		extra_data CHAR(60)
 	END RECORD
 DEFINE m_custs_date DATETIME YEAR TO SECOND
 MAIN
@@ -74,41 +78,18 @@ FUNCTION list_custs()
 END FUNCTION
 --------------------------------------------------------------------------------
 FUNCTION show_cust(l_cust SMALLINT)
-	DEFINE l_extra RECORD
-		extra_data CHAR(60)
-	END RECORD
-	DEFINE l_json STRING
-	DEFINE l_updated_date, l_now DATETIME YEAR TO SECOND
-
-	LET l_now = CURRENT
+	DEFINE l_updated_date DATETIME YEAR TO SECOND
 	OPEN WINDOW cust_det WITH FORM "cust_dets"
 
-	SELECT extra, updated_date
-		INTO l_extra.extra_data, l_updated_date
-	 FROM custdets WHERE acc = m_custs[ l_cust ].acc
-
-	IF l_updated_date IS NOT NULL
-	AND l_updated_date > ( l_now - 1 UNITS DAY ) THEN
--- got data from db and current
-	ELSE
-		IF NOT mob_lib.check_network() THEN
-			IF l_updated_date IS NULL THEN
-				CALL gl_lib.gl_winMessage("Error","Not connected and not available locally","exclamation")
-			ELSE
--- data is stale
-			END IF
-		ELSE
-			LET l_updated_date = l_now
-			LET l_json = mob_lib.ws_get_custDets( m_custs[ l_cust ].acc )
-			CALL util.JSON.parse(l_json, l_extra)
-			DELETE FROM custdets WHERE acc = m_custs[ l_cust ].acc
-			INSERT INTO custdets VALUES(m_custs[ l_cust ].acc, l_extra.extra_data, l_now)
-		END IF
+	LET l_updated_date = get_custDets( l_cust )
+	IF l_updated_date IS NULL THEN
+		CALL gl_lib.gl_winMessage("Error","Not connected and not available locally","exclamation")
+		RETURN 
 	END IF
 
 	DISPLAY "Data as of: "||l_updated_date TO f_info
 	DISPLAY BY NAME m_custs[ l_cust ].*
-	DISPLAY l_extra.extra_data TO f_extra
+	DISPLAY m_custDets.extra_data TO f_extra
 
 	MENU
 		ON ACTION back EXIT MENU
@@ -154,7 +135,7 @@ FUNCTION get_custs()
 		RETURN
 	END IF
 
-	LET l_json = mob_lib.ws_get_custs()
+	LET l_json = mob_ws_lib.ws_getCusts()
 	IF l_json IS NOT NULL THEN
 		CALL util.JSON.parse(l_json, m_custs )
 	ELSE
@@ -173,10 +154,37 @@ FUNCTION get_custs()
 	DISPLAY m_custs.getLength()," from server"
 END FUNCTION
 --------------------------------------------------------------------------------
+FUNCTION get_custDets(l_cust SMALLINT)
+	DEFINE l_json STRING
+	DEFINE l_updated_date, l_now DATETIME YEAR TO SECOND
+
+	SELECT extra, updated_date
+		INTO m_custDets.extra_data, l_updated_date
+	 FROM custdets WHERE acc = m_custs[ l_cust ].acc
+
+	LET l_now = CURRENT
+	IF l_updated_date IS NOT NULL
+	AND l_updated_date > ( l_now - 1 UNITS DAY ) THEN
+		RETURN l_updated_date -- got data from DB
+	ELSE
+		IF NOT mob_lib.check_network() THEN
+			RETURN l_updated_date
+		END IF
+	END IF
+
+	LET l_json = mob_ws_lib.ws_getCustDets( m_custs[ l_cust ].acc )
+	CALL util.JSON.parse(l_json, m_custDets)
+	DELETE FROM custdets WHERE acc = m_custs[ l_cust ].acc
+	INSERT INTO custdets VALUES(m_custs[ l_cust ].acc, m_custDets.extra_data, l_now)
+
+	RETURN l_now
+END FUNCTION
+--------------------------------------------------------------------------------
 -- Photo
 FUNCTION photo(l_take BOOLEAN)
   DEFINE l_photo_file, l_local_file, l_ret STRING
 	DEFINE l_image BYTE
+
 	OPEN WINDOW show_photo WITH FORM "show_photo"
 
 	IF l_take THEN
@@ -206,8 +214,10 @@ FUNCTION photo(l_take BOOLEAN)
 	MENU
 		ON ACTION send
 			IF mob_lib.check_network() THEN
-				LET l_ret = mob_lib.ws_post_file( l_local_file, os.path.size(l_local_file) )
-				CALL gl_lib.gl_winMessage("Info",l_ret,"information")
+				LET l_ret = mob_ws_lib.ws_putPhoto( l_local_file )
+				IF l_ret IS NOT NULL THEN
+					CALL gl_lib.gl_winMessage("Info",l_ret,"information")
+				END IF
 			ELSE
 				CALL gl_lib.gl_winMessage("Error","No network connection","exclamation")
 			END IF
@@ -218,11 +228,14 @@ END FUNCTION
 --------------------------------------------------------------------------------
 -- send some data to the server
 FUNCTION send_data()
-	DEFINE l_data STRING
+	DEFINE l_data, l_ret STRING
 
 	LET l_data = util.JSON.stringify(m_custs)
 	IF mob_lib.check_network() THEN
-		CALL mob_lib.ws_send_data(l_data)
+		LET l_ret = mob_ws_lib.ws_sendData(l_data)
+		IF l_ret IS NOT NULL THEN
+			CALL gl_lib.gl_winMessage("Info",l_ret,"information")
+		END IF
 	ELSE
 		CALL gl_lib.gl_winMessage("Error","No network connection","exclamation")
 	END IF
